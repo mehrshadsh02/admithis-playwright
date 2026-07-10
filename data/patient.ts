@@ -1,5 +1,5 @@
 export const patient = {
-  nationalCode: '1234567891',
+  nationalCode: '1520554001',
 
   mobile: '09383509316',
 
