@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+
+    "lib": ["ES2023"],
+
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    "resolveJsonModule": true,
+
+    "baseUrl": ".",
+
+    "paths": {
+      "@api/*": ["api/*"],
+      "@components/*": ["components/*"],
+      "@config/*": ["config/*"],
+      "@data/*": ["data/*"],
+      "@fixtures/*": ["fixtures/*"],
+      "@helpers/*": ["helpers/*"],
+      "@models/*": ["models/*"],
+      "@pages/*": ["pages/*"],
+      "@utils/*": ["utils/*"]
+    },
+
+    "types": [
+      "node",
+      "@playwright/test"
+    ],
+
+    "skipLibCheck": true
+  },
+
+  "include": [
+    "**/*.ts"
+  ],
+
+  "exclude": [
+    "node_modules",
+    "playwright-report",
+    "test-results"
+  ]
+}
