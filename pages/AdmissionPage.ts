@@ -1,11 +1,23 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page,type Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { AdmissionLocator } from '../locators/AdmissionLocator';
+import type { Patient } from '../data/patient';
 
 
 export class AdmissionPage extends BasePage {
     
   private readonly locator = new AdmissionLocator(this.page);
+  
+  private async selectNgOption(
+    dropdown: Locator,
+    option: string,
+    ): Promise<void> {
+    await dropdown.click();
+
+    await this.page
+        .getByRole('option', { name: option, exact: true })
+        .click();
+    }
 
   constructor(page: Page) {
     super(page);
@@ -61,4 +73,17 @@ export class AdmissionPage extends BasePage {
 
         await this.identityInquiry();
         }
+
+    async fillPatientInformation(patient: Patient): Promise<void> {
+        await this.selectNgOption(this.locator.maritalStatus, patient.maritalStatus);
+
+        await this.selectNgOption(
+            this.locator.insuranceRelation,
+            patient.insuranceRelation,
+        );
+
+        await this.locator.mobileNumber.fill(patient.mobile);
+
+        await this.locator.address.fill(patient.address);
+        }    
 }

@@ -15,15 +15,10 @@ test('Open Filing Page', async ({ page, context }) => {
   const admission = new AdmissionPage(page);
 
   await admission.open();
-
-//   await admission.selectIranianNationality();
-
-//   await admission.enterNationalCode(patient.nationalCode);
-
-//   await admission.verifyIdentityInquiryEnabled();
-
-//   await admission.identityInquiry();
+  
   await admission.searchPatient(patient.nationalCode);
+
+  await admission.fillPatientInformation(patient);
 
   await expect(page).toHaveURL(/8019/);
 });

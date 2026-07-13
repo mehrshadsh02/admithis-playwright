@@ -19,10 +19,26 @@ export class AdmissionLocator {
     }
 
     get identityInquiryButton(): Locator {
-        return this.page.getByRole('button', { name: 'استعلام هویت' });
+        return this.page.getByRole('button', { name: 'استحقاق درمان' });
     }
 
     get searchButton(): Locator {
     return this.page.locator('#button-addon3');
+    }
+    
+    get maritalStatus(): Locator {
+    return this.page.locator('[formcontrolname="maritalStatus"] .ng-select-container');
+    }
+
+    get insuranceRelation(): Locator {
+    return this.page.locator('[formcontrolname="insurRelation"] .ng-select-container');
+    }
+
+    get mobileNumber(): Locator {
+    return this.page.locator('input[formcontrolname="mobileNumber"]');
+    }
+
+    get address(): Locator {
+    return this.page.locator('input[formcontrolname="address"]');
     }
 }
