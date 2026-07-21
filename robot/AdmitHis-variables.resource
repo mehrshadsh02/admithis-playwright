@@ -1,0 +1,60 @@
+*** Variables ***
+
+${Landing_App_URL}       http://192.168.5.19:1201
+
+${AdmitHis_Api_URL}       http://192.168.5.19:1600
+
+${AdmitHis_App_URL}       http://192.168.5.19:8019/filing
+
+${Cash_Api_URL}        http://192.168.5.19:8074
+
+${Cash_App_URL}       http://192.168.5.19:8075/admit
+
+${Cartable_Api_URL}       http://192.168.5.19:8020
+
+${BROWSER}        chrome
+
+${CHROME_DRIVER}    C:/chromedriver.exe
+
+${AUTH_BEARER}    bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3VzZXJkYXRhIjoiOSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiIzMDYyNyIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvc2VyaWFsbnVtYmVyIjoiMzhmMTZmMWNmNjNlODJlZjM1YTU5MTg4YWExYWFhZWQzNTg2M2YxNTgzYTY3NTJmMmYxNWMyNmUwNDIzNzEwNyIsIlVzZXJJZCI6IjkiLCJVc2VyRGlzcGxheU5hbWUiOiLYotiy24zYqtinINmB2LTYp9ix2qnbjCDZhtuM2KciLCJUZW5hbnRJZCI6IjEwMDE1IiwiUGVyc29uSWQiOjkyMywiTG9naW5QYWdlVXJsIjoiMTcyLjI2LjU5LjQzIiwiTlBJRCI6IiIsInVzaW5mIjoieTFvZHo2eUs4QmN6ZHc3K2F0QktteXIvRkxjVVY2Tk8xVzNpUnJnaDNQMHVjSVJjekU3MGxEQmxyTE9FVDNPWHBvSzRuWW81RHVMbWIwNHZiWmtDSElYWmYwQVhnVXlXbWlxNVdVb3VTOHlMODBZbkdOQ2lIZWdaZjVwY0F1ckIiLCJDSUQiOiIiLCJBSUQiOiIxMDAiLCJDZW50ZXJOYW1lIjoi2YXYsdqp2LIg2KrZh9ix2KfZhiIsIlVzZXJFbWFpbEFkZHJlc3MiOiIiLCJEeW5hbWljUGVybWlzc2lvbktleSI6IjMyMzk2MDM4ZmNhMDFjYjY5ZDJjNDRiMDk2NDYyNGQxZmU0NjFjOTc4MGNmZmM3Zjk1NTgyYThhYTk3N2MyYTEiLCJJZGxldGltZSI6IjMyIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjpbImNoZWNrIiwicm9sZSJdLCJSb2xlSWQiOjExOTUsImV4cCI6MTc4MjQ1MDE4NiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo3NzQwLyIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MjY1OC8ifQ.EFy67pVSKsBYSSHhEsxdNC2tThjkoYlmUB5sSeWnjx4
+
+${COOKIE_TOKEN}   eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3VzZXJkYXRhIjoiOSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiIzMDYyNyIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvc2VyaWFsbnVtYmVyIjoiMzhmMTZmMWNmNjNlODJlZjM1YTU5MTg4YWExYWFhZWQzNTg2M2YxNTgzYTY3NTJmMmYxNWMyNmUwNDIzNzEwNyIsIlVzZXJJZCI6IjkiLCJVc2VyRGlzcGxheU5hbWUiOiLYotiy24zYqtinINmB2LTYp9ix2qnbjCDZhtuM2KciLCJUZW5hbnRJZCI6IjEwMDE1IiwiUGVyc29uSWQiOjkyMywiTG9naW5QYWdlVXJsIjoiMTcyLjI2LjU5LjQzIiwiTlBJRCI6IiIsInVzaW5mIjoieTFvZHo2eUs4QmN6ZHc3K2F0QktteXIvRkxjVVY2Tk8xVzNpUnJnaDNQMHVjSVJjekU3MGxEQmxyTE9FVDNPWHBvSzRuWW81RHVMbWIwNHZiWmtDSElYWmYwQVhnVXlXbWlxNVdVb3VTOHlMODBZbkdOQ2lIZWdaZjVwY0F1ckIiLCJDSUQiOiIiLCJBSUQiOiIxMDAiLCJDZW50ZXJOYW1lIjoi2YXYsdqp2LIg2KrZh9ix2KfZhiIsIlVzZXJFbWFpbEFkZHJlc3MiOiIiLCJEeW5hbWljUGVybWlzc2lvbktleSI6IjMyMzk2MDM4ZmNhMDFjYjY5ZDJjNDRiMDk2NDYyNGQxZmU0NjFjOTc4MGNmZmM3Zjk1NTgyYThhYTk3N2MyYTEiLCJJZGxldGltZSI6IjMyIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjpbImNoZWNrIiwicm9sZSJdLCJSb2xlSWQiOjExOTUsImV4cCI6MTc4MjQ1MDE4NiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo3NzQwLyIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MjY1OC8ifQ.EFy67pVSKsBYSSHhEsxdNC2tThjkoYlmUB5sSeWnjx4
+
+${GLOBAL_SPINNER}     css=.ngx-spinner-overlay,.loading-overlay,.spinner,.mat-progress-spinner,.cdk-overlay-backdrop
+
+${nationalCode}    1520554001
+
+${FileFormationID}  683676 
+
+${wardId}    201
+
+${wardId_edit}    224
+
+${Doctor_ID}    599
+
+${Doctor_ID_Edit}    592
+
+${emergency_wardId}    200
+
+${pishPardaght}    10000
+
+${pishPardaght_Edit}    0
+
+# ${STATE_FILE}    ${CURDIR}/state/runtime_state.json
+${PROJECT_ROOT}      ${EXECDIR}
+${STATE_DIR}         ${PROJECT_ROOT}${/}resources${/}state
+${STATE_FILE}        ${STATE_DIR}${/}runtime_state.json
+
+${DB_HOST}      192.168.5.17
+
+${DB_USER}      sa
+
+${DB_PASS}      payvandd
+
+${DB_NAME}      His1_Payvand
+
+${HIS_URL}      http://192.168.5.19:1600
+
+${Date_From_Search}    1405/03/18
+
+${Date_To_Search}    1405/04/31

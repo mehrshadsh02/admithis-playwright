@@ -16,10 +16,12 @@ export interface Patient {
   causeOfHospitalization: string;
 
   ward: string;
+  preadmitEditWard: string;
   doctor: string;
   responsiblePatient: string;
 
   prepayment: string;
+  refundComment: string;
 }
 
 export const patient: Patient = {
@@ -40,8 +42,10 @@ export const patient: Patient = {
   causeOfHospitalization: 'دل درد',
 
   ward: 'اطفال 2 - تخت خالی',
+  preadmitEditWard: 'اطفال 2 - تخت خالی (33)',
   doctor: 'Siavash Siavash',
   responsiblePatient: 'خود فرد',
 
   prepayment: '10000',
+  refundComment: 'test',
 };

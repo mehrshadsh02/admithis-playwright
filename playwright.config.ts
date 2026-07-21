@@ -40,10 +40,9 @@ export default defineConfig({
 
     ignoreHTTPSErrors: true,
 
-    viewport: {
-      width: 1920,
-      height: 1080
-    }
+    viewport: null,
+
+    launchOptions: { args: ['--start-maximized'] }
   },
 
   projects: [

@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-test('Open Landing with token', async ({ page, context }) => {
+test('Open AdmitHis with token', async ({ page, context }) => {
   await context.addCookies([
     {
       name: 'token',
@@ -10,7 +10,10 @@ test('Open Landing with token', async ({ page, context }) => {
     },
   ]);
 
-  await page.goto('/');
+  await page.goto(process.env.ADMITHIS_APP_URL!);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
 
-  await expect(page).toHaveURL(/1201/);
+  await expect(page).toHaveURL(/8019/);
+  await expect(page.locator('input[formcontrolname="nationalCode"]')).toBeVisible();
 });
