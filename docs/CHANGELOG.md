@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-26
+
+- Migrated Robot inpatient steps 13-20 into the existing `tests/admit/open-admission.spec.ts` sequence.
+- Extended patient data with inpatient class, bed, and edit responsible-patient values.
+- Extended admission locators for confirmation and protected inpatient edit fields.
+- Refactored shared patient information filling and added inpatient assignment, save, disabled-field verification, and edit workflows to `AdmissionPage`.
+- Removed the duplicate inpatient spec path.
+- Recorded the WSL 1/Windows Node validation blocker.
+
 ## 2026-07-21
 
 - Created permanent project memory documentation.

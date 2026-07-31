@@ -14,11 +14,11 @@
 | `AdmitHis-UI.robot` | `10-UI - Edit Preadmit Patient`                   | `tests/admit/open-admission.spec.ts` | Migrated | Uses `AdmissionPage.editPreadmitWardAndDoctor`.                         |
 | `AdmitHis-UI.robot` | `11-UI - Cancel Preadmit`                         | `tests/admit/open-admission.spec.ts` | Migrated | Uses `AdmissionPage.cancelPreadmit`.                                    |
 | `AdmitHis-UI.robot` | `12-UI - Open Cash Web And Refund`                | `tests/admit/open-admission.spec.ts` | Migrated | Uses `CashPage.refundPatientByNationalCode`.                            |
-| `AdmitHis-UI.robot` | `13-UI - Open Filling Page`                       | Not created                          | Pending  | Inpatient workflow begins.                                              |
-| `AdmitHis-UI.robot` | `14-UI - Enter national code of inpatient`        | Not created                          | Pending  | Similar to step 02.                                                     |
-| `AdmitHis-UI.robot` | `15-UI - Fill inpatient Info`                     | Not created                          | Pending  | Adds `patientClass`.                                                    |
-| `AdmitHis-UI.robot` | `16-UI - Assign Ward And Doctor`                  | Not created                          | Pending  | Adds bed selection.                                                     |
-| `AdmitHis-UI.robot` | `17-UI - Save Admission Filing`                   | Not created                          | Pending  | Includes confirm modal.                                                 |
-| `AdmitHis-UI.robot` | `18-UI - deny admit print page`                   | Not created                          | Pending  | Same deny-print behavior.                                               |
-| `AdmitHis-UI.robot` | `19-UI - go to inpatient list`                    | Not created                          | Pending  | Similar to step 08.                                                     |
-| `AdmitHis-UI.robot` | `20-UI - Edit Preadmit Patient`                   | Not created                          | Pending  | Inpatient edit asserts disabled fields and changes responsible patient. |
+| `AdmitHis-UI.robot` | `13-UI - Open Filling Page`                       | `tests/admit/open-admission.spec.ts` | Migrated | Continues the existing admission flow with `AdmissionPage.open`.          |
+| `AdmitHis-UI.robot` | `14-UI - Enter national code of inpatient`        | `tests/admit/open-admission.spec.ts` | Migrated | Reuses national-code search workflow.                                     |
+| `AdmitHis-UI.robot` | `15-UI - Fill inpatient Info`                     | `tests/admit/open-admission.spec.ts` | Migrated | Adds `patientClass` after shared patient details.                          |
+| `AdmitHis-UI.robot` | `16-UI - Assign Ward And Doctor`                  | `tests/admit/open-admission.spec.ts` | Migrated | Adds inpatient bed selection.                                             |
+| `AdmitHis-UI.robot` | `17-UI - Save Admission Filing`                   | `tests/admit/open-admission.spec.ts` | Migrated | Adds the inpatient confirmation modal.                                    |
+| `AdmitHis-UI.robot` | `18-UI - deny admit print page`                   | `tests/admit/open-admission.spec.ts` | Migrated | Reuses deny-print behavior.                                               |
+| `AdmitHis-UI.robot` | `19-UI - go to inpatient list`                    | `tests/admit/open-admission.spec.ts` | Migrated | Reuses inpatient-list navigation.                                         |
+| `AdmitHis-UI.robot` | `20-UI - Edit Preadmit Patient`                   | `tests/admit/open-admission.spec.ts` | Migrated | Verifies disabled fields and changes responsible patient to spouse.       |

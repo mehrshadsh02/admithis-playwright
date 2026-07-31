@@ -13,6 +13,7 @@ export class AdmissionLocator {
 
   get nationalCode(): Locator {
     return this.page.locator("input[formcontrolname='nationalCode']");
+    // return this.page.getByRole('textbox', { name: 'کد ملی/پاسپورت' });
   }
 
   get identityInquiryButton(): Locator {
@@ -69,6 +70,10 @@ export class AdmissionLocator {
 
   get preadmitListCheckbox(): Locator {
     return this.page.locator("xpath=//span[contains(@class,'mat-checkbox-inner-container')]");
+  }
+
+  get spinner(): Locator {
+  return this.page.locator('app-spinner .back-spenner');
   }
 
   get listSearchButton(): Locator {

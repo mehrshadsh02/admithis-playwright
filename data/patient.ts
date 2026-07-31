@@ -7,6 +7,9 @@ export interface Patient {
   mobile: string;
   address: string;
 
+  ShabaNo: string;
+  BankAcountName: string;
+
   accompanyName: string;
   accompanyRelation: string;
   accompanyMobile: string;
@@ -14,11 +17,14 @@ export interface Patient {
   firstRecognition: string;
   howToRefer: string;
   causeOfHospitalization: string;
+  patientClass: string;
 
   ward: string;
+  bed: string;
   preadmitEditWard: string;
   doctor: string;
   responsiblePatient: string;
+  inpatientEditResponsiblePatient: string;
 
   prepayment: string;
   refundComment: string;
@@ -33,6 +39,9 @@ export const patient: Patient = {
   mobile: '09383509316',
   address: 'dfgdfgdfgd',
 
+  ShabaNo: '012025000001425236252145',
+  BankAcountName: 'مهرشاد شیخ الاسلامی',
+
   accompanyName: 'مهرشاد شیخ الاسلامی',
   accompanyRelation: 'خود فرد',
   accompanyMobile: '09383586316',
@@ -40,11 +49,14 @@ export const patient: Patient = {
   firstRecognition: 'شکستگی',
   howToRefer: 'وسیله شخصی',
   causeOfHospitalization: 'دل درد',
+  patientClass: 'بستری',
 
   ward: 'اطفال 2 - تخت خالی',
+  bed: 'اتاق1 - تخت عمومي - تخت18',
   preadmitEditWard: 'اطفال 2 - تخت خالی (33)',
   doctor: 'Siavash Siavash',
   responsiblePatient: 'خود فرد',
+  inpatientEditResponsiblePatient: 'همسر',
 
   prepayment: '10000',
   refundComment: 'test',

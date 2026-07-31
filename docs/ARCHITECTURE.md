@@ -31,6 +31,15 @@ The project is a Playwright + TypeScript end-to-end test suite for AdmitHis UI w
 - editing a preadmit patient's ward/doctor
 - canceling a preadmit patient
 
+The inpatient extension supports:
+
+- shared demographic and companion form filling for both admission types
+- inpatient patient-class and clinical-data filling
+- ward, bed, doctor, and responsible-patient assignment
+- inpatient save confirmation
+- inpatient edit lookup and protected-field assertions
+- responsible-patient change during inpatient edit
+
 `pages/BasePage.ts` provides navigation, page readiness, and URL verification.
 
 `pages/CashPage.ts` supports cash search, prepayment, and refund flows by national code.
@@ -62,6 +71,8 @@ Robot variables are translated into typed TypeScript data in `data/patient.ts`.
 
 Tests import stable data and pass it to page methods. Page methods choose the controls and sequence.
 
+The inpatient workflow extends the existing patient model rather than creating duplicate scenario data because Robot steps 13-20 reuse the same patient and most of the same form values.
+
 ## Naming Conventions
 
 - Page objects: `XPage`
@@ -74,4 +85,5 @@ Tests import stable data and pass it to page methods. Page methods choose the co
 
 - Robot keyword `Select From Ng Select` is implemented once in `NgSelect`.
 - The first migrated spec remains in `tests/admit/open-admission.spec.ts` and is extended rather than duplicated.
+- The inpatient Robot block continues the existing `tests/admit/open-admission.spec.ts` sequence after preadmit cancellation and refund.
 - Mojibake Persian text from Robot is preserved as-is for selector/data compatibility until encoding is intentionally corrected across the project.

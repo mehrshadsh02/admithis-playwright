@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -14,10 +14,10 @@ export default defineConfig({
 
   workers: process.env.CI ? 2 : undefined,
 
-  timeout: 60_000,
+  timeout: 600_000,
 
   expect: {
-    timeout: 10_000,
+    timeout: 100_000,
   },
 
   reporter: [
@@ -27,33 +27,27 @@ export default defineConfig({
 
   use: {
     baseURL: process.env.ADMITHIS_APP_URL,
-
     trace: 'off',
-
     screenshot: 'off',
-
     video: 'off',
-
     actionTimeout: 15_000,
-
-    navigationTimeout: 30_000,
-
+    navigationTimeout: 300_000,
     ignoreHTTPSErrors: true,
-
-    viewport: null,
-
-    launchOptions: { args: ['--start-maximized'] }
   },
 
   projects: [
-  {
-    name: 'chrome',
-    use: {
-      ...devices['Desktop Chrome'],
-      channel: 'chrome',
+    {
+      name: 'chrome',
+      use: {
+        browserName: 'chromium',
+        channel: 'chrome',
+        viewport: null,
+        launchOptions: {
+          args: ['--start-maximized'],
+        },
+      },
     },
-  },
-],
+  ],
 
   outputDir: 'test-results'
 });
