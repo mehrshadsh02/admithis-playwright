@@ -26,12 +26,43 @@ export class CashPage extends BasePage {
     await this.waitForPageReady();
   }
 
+  // async searchPatientByNationalCode(nationalCode: string): Promise<void> {
+  //   await this.locator.nationalCode.waitFor({ state: 'visible' });
+  //   await this.locator.nationalCode.fill(nationalCode);
+  //   await this.locator.searchButton.click();
+  //   await this.waitForPageReady();
+  //   await this.locator.rowByNationalCode(nationalCode).waitFor({ state: 'visible' });
+  // }
+
   async searchPatientByNationalCode(nationalCode: string): Promise<void> {
+    
+    const getPatientsResponsePromise = this.page.waitForResponse(
+        (response) =>
+            response.url().includes('/api/Cash/GetPatients') &&
+            response.request().method() === 'POST' &&
+            response.status() === 200 
+    );
+
     await this.locator.nationalCode.waitFor({ state: 'visible' });
     await this.locator.nationalCode.fill(nationalCode);
+    
+    console.log(`[ACTION] Searching for patient with National Code: ${nationalCode}`);
     await this.locator.searchButton.click();
     await this.waitForPageReady();
+    
+    const response = await getPatientsResponsePromise;
+    const responseBody = await response.json();
+
+    if (responseBody.isSuccess && Array.isArray(responseBody.resultObject) && responseBody.resultObject.length === 0) {
+        
+        const errorMessage = `بازپرداخت بیمار در صندوق مشاهده نشد - کد ملی: ${nationalCode}`;
+        console.error(`[CASH FAIL-FAST] API returned empty result: ${errorMessage}`);
+        
+        throw new Error(errorMessage);
+    }
+    
     await this.locator.rowByNationalCode(nationalCode).waitFor({ state: 'visible' });
+    console.log(`[SUCCESS] Patient found and row is visible.`);
   }
 
   async payPatientByNationalCode(nationalCode: string): Promise<void> {

@@ -3,7 +3,7 @@ import { AdmissionPage } from '../../pages/AdmissionPage';
 import { CashPage } from '../../pages/CashPage';
 import { patient } from '../../data/patient';
 
-test('001-Create preadmit filing and deny print page', async ({ page, context }) => {
+test('001-Create,Edit and Cancel preadmit filing', async ({ page, context }) => {
   await context.addCookies([
     {
       name: 'token',
@@ -37,7 +37,7 @@ test('001-Create preadmit filing and deny print page', async ({ page, context })
     await cash.payPatientByNationalCode(patient.nationalCode);
   });
 
-  await test.step('Pay Pishpardakht2', async () => {
+  await test.step('Edit PreAdmit', async () => {
     const admission = new AdmissionPage(page);
     
     await admission.openInpatientList();
@@ -47,17 +47,11 @@ test('001-Create preadmit filing and deny print page', async ({ page, context })
     await admission.editPreadmitWardAndDoctor(patient);
 
     await admission.cancelPreadmit(patient.nationalCode);
-
   });
 
-  await test.step('Pay Pishpardakht3', async () => {
-     const cash = new CashPage(page);
-     await cash.refundPatientByNationalCode(patient.nationalCode, patient.refundComment);
-  
+  await test.step('Refund Pishpardakht', async () => {
+    const cash = new CashPage(page);
+    await cash.refundPatientByNationalCode(patient.nationalCode, patient.refundComment);
   });
-
-
-
- 
 });
 

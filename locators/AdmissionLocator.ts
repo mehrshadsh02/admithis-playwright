@@ -32,6 +32,30 @@ export class AdmissionLocator {
     return this.page.locator('[formcontrolname="insurRelation"] .ng-select-container');
   }
 
+  get shebaNo(): Locator {
+  return this.page.locator('input[formcontrolname="shebaNo"]');
+  }
+
+  get shebaOwner(): Locator {
+    return this.page.locator('input[formcontrolname="shebaOwner"]');
+  }
+
+  get missedSheba(): Locator {
+    return this.page.locator('mat-checkbox[formcontrolname="missedSheba"]');
+  }
+
+  get missedShebaLabel(): Locator {
+    return this.page.locator(
+      'mat-checkbox[formcontrolname="missedSheba"] label.mat-checkbox-layout'
+    );
+  }
+
+  get missedShebaInput(): Locator {
+    return this.page.locator(
+      'mat-checkbox[formcontrolname="missedSheba"] input[type="checkbox"]'
+    );
+  }
+
   get mobileNumber(): Locator {
     return this.page.locator('input[formcontrolname="mobileNumber"]');
   }
@@ -97,4 +121,14 @@ export class AdmissionLocator {
   get confirmYesButton(): Locator {
     return this.page.locator('button.swal2-confirm').filter({ hasText: 'بله' });
   }
+
+  get admissionActionsButton(): Locator {
+  return this.page.locator('button[aria-label="Example icon-button with a menu"]');
+  }
+
+  get cancelAdmissionMenuItem(): Locator {
+    return this.page.locator('button[mat-menu-item]').filter({ hasText: 'لغو پذیرش' });
+  }
+
+  
 }

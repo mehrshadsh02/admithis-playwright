@@ -53,7 +53,7 @@ export const patient: Patient = {
 
   ward: 'اطفال 2 - تخت خالی',
   bed: 'اتاق1 - تخت عمومي - تخت18',
-  preadmitEditWard: 'اطفال 2 - تخت خالی (33)',
+  preadmitEditWard: 'اطفال 2 - تخت خالی',
   doctor: 'Siavash Siavash',
   responsiblePatient: 'خود فرد',
   inpatientEditResponsiblePatient: 'همسر',
