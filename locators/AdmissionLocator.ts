@@ -92,6 +92,10 @@ export class AdmissionLocator {
     return this.page.locator("//img[@src='assets/icons/inpatient.svg']/ancestor::a");
   }
 
+  // readonly inpatientListLink = this.page.locator(
+  //   "//img[@src='assets/icons/inpatient.svg']/ancestor::a"
+  // );
+
   get preadmitListCheckbox(): Locator {
     return this.page.locator("xpath=//span[contains(@class,'mat-checkbox-inner-container')]");
   }

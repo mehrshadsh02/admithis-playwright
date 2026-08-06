@@ -3,16 +3,34 @@ import { expect, type Locator, type Page } from '@playwright/test';
 export abstract class BaseComponent {
   protected constructor(protected readonly page: Page) {}
 
-  protected async waitUntilStable(timeout = 30000): Promise<void> {
-    const spinner = this.page.locator('.back-spenner');
+  protected async waitUntilStable(timeout = 30_000): Promise<void> {
 
-    if (await spinner.count()) {
+    if (this.page.isClosed()) {
+      throw new Error(
+        '[BaseComponent] Cannot wait for stability because the page is closed.'
+      );
+    }
+    const spinner = this.page.locator('.back-spenner').first();
+
+     try {
       await spinner.waitFor({
         state: 'hidden',
         timeout,
-      }).catch(() => {});
+      });
+    } catch (error) {
+      if (this.page.isClosed()) {
+        throw new Error(
+          '[BaseComponent] Page was closed while waiting for the spinner.'
+        );
+      }
+
+      throw new Error(
+        `[BaseComponent] Spinner remained visible for ${timeout}ms.`,
+        { cause: error }
+      );
     }
   }
+
 
   protected async safeClick(locator: Locator): Promise<void> {
     await this.waitUntilStable();

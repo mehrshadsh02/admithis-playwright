@@ -1,0 +1,1 @@
+export { insuredAdult } from './insuredAdult';

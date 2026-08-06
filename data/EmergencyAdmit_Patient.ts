@@ -1,4 +1,4 @@
-export interface Patient {
+export interface EmergencyAdmit_Patient {
   nationalCode: string;
 
   maritalStatus: string;
@@ -21,7 +21,7 @@ export interface Patient {
 
   ward: string;
   bed: string;
-  preadmitEditWard: string;
+  EmergencyAdmitEditWard: string;
   doctor: string;
   responsiblePatient: string;
   inpatientEditResponsiblePatient: string;
@@ -30,19 +30,19 @@ export interface Patient {
   refundComment: string;
 }
 
-export const patient: Patient = {
-  nationalCode: '1520554001',
+export const EmergencyAdmit_Patient: EmergencyAdmit_Patient = {
+  nationalCode: '1671637801',
 
-  maritalStatus: 'مجرد',
+  maritalStatus: 'متاهل',
   insuranceRelation: 'خود فرد',
 
-  mobile: '09383509316',
+  mobile: '09196964067',
   address: 'dfgdfgdfgd',
 
   ShabaNo: '012025000001425236252145',
-  BankAcountName: 'مهرشاد شیخ الاسلامی',
+  BankAcountName: 'پرویز پیرزاده',
 
-  accompanyName: 'مهرشاد شیخ الاسلامی',
+  accompanyName: 'پرویز پیرزاده',
   accompanyRelation: 'خود فرد',
   accompanyMobile: '09383586316',
 
@@ -51,13 +51,13 @@ export const patient: Patient = {
   causeOfHospitalization: 'دل درد',
   patientClass: 'بستری',
 
-  ward: 'اطفال 2 - تخت خالی',
-  bed: 'اتاق1 - تخت عمومي - تخت18',
-  preadmitEditWard: 'اطفال 2 - تخت خالی',
+  ward: 'اورژانس تحت نظر - تخت خالی',
+  bed: 'اتاق1 - تخت عمومي - تخت22',
+  EmergencyAdmitEditWard: 'بستری موقت کرونا - تخت خالی',
   doctor: 'Siavash Siavash',
-  responsiblePatient: 'خود فرد',
+  responsiblePatient: 'اورژانس',
   inpatientEditResponsiblePatient: 'همسر',
 
-  prepayment: '10000',
+  prepayment: '',
   refundComment: 'test',
 };

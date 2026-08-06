@@ -2,7 +2,8 @@ import { expect, type Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { AdmissionLocator } from '../locators/AdmissionLocator';
 import { NgSelect } from '../components/NgSelect';
-import type { Patient } from '../data/patient';
+import type { Patient } from '../data/models/Patient';
+// import { EmergencyAdmit_Patient } from '../../data/EmergencyAdmit_Patient';
 // import { TIMEOUT } from 'dns';
 
 export class AdmissionPage extends BasePage {
@@ -62,42 +63,42 @@ export class AdmissionPage extends BasePage {
     await this.identityInquiry();
   }
 
-  async fillPatientInformation(patient: Patient): Promise<void> {
-    await this.ngSelect.selectByFormControl('maritalStatus', patient.maritalStatus);
+  async fillPatientInformation(Patient: Patient): Promise<void> {
+    await this.ngSelect.selectByFormControl('maritalStatus', Patient.maritalStatus);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('insurRelation', patient.insuranceRelation);
+    await this.ngSelect.selectByFormControl('insurRelation', Patient.insuranceRelation);
     await this.waitUntilStable();
 
-    await this.locator.mobileNumber.fill(patient.mobile);
-    await this.locator.address.fill(patient.address);
+    await this.locator.mobileNumber.fill(Patient.mobile);
+    await this.locator.address.fill(Patient.address);
 
-    await this.page.getByRole('textbox', { name: 'شماره شبا' }).fill(patient.ShabaNo);
-    await this.page.getByRole('textbox', { name: 'صاحب شبا' }).fill(patient.BankAcountName);
+    await this.page.getByRole('textbox', { name: 'شماره شبا' }).fill(Patient.ShabaNo);
+    await this.page.getByRole('textbox', { name: 'صاحب شبا' }).fill(Patient.BankAcountName);
 
-    await this.locator.accompanyFullName.fill(patient.accompanyName);
-    await this.ngSelect.selectByFormControl('relation', patient.accompanyRelation);
+    await this.locator.accompanyFullName.fill(Patient.accompanyName);
+    await this.ngSelect.selectByFormControl('relation', Patient.accompanyRelation);
     await this.waitUntilStable();
-    await this.locator.accompanyMobileNumber.fill(patient.accompanyMobile);
+    await this.locator.accompanyMobileNumber.fill(Patient.accompanyMobile);
 
     await this.locator.showClinicalFieldsButton.click();
     await this.waitForPageReady();
 
-    await this.ngSelect.selectByFormControl('firstRecognition', patient.firstRecognition);
+    await this.ngSelect.selectByFormControl('firstRecognition', Patient.firstRecognition);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('howToRefer', patient.howToRefer);
+    await this.ngSelect.selectByFormControl('howToRefer', Patient.howToRefer);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('causeOfHospitalization', patient.causeOfHospitalization,);
+    await this.ngSelect.selectByFormControl('causeOfHospitalization', Patient.causeOfHospitalization,);
     await this.waitUntilStable();
   }
 
-  async assignWardDoctorAndPrepayment(patient: Patient): Promise<void> {
-    await this.ngSelect.selectByFormControl('wardfileld', patient.ward);
+  async assignWardDoctorAndPrepayment(Patient: Patient): Promise<void> {
+    await this.ngSelect.selectByFormControl('wardfileld', Patient.ward);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
+    await this.ngSelect.selectByFormControl('doctorField', Patient.doctor);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('responsiblePatient', patient.responsiblePatient);
+    await this.ngSelect.selectByFormControl('responsiblePatient', Patient.responsiblePatient);
     await this.waitUntilStable();
-    await this.locator.prepayment.fill(patient.prepayment);
+    await this.locator.prepayment.fill(Patient.prepayment);
   }
 
   async saveAdmissionFiling(): Promise<void> {
@@ -149,7 +150,7 @@ export class AdmissionPage extends BasePage {
     await this.waitForPageReady();
   }
 
-  async openInpatientList(): Promise<void> {
+  async openInPatientList(): Promise<void> {
     const admitHisAppUrl = process.env.ADMITHIS_APP_URL;
 
     if (!admitHisAppUrl) {
@@ -158,6 +159,10 @@ export class AdmissionPage extends BasePage {
 
     await this.page.goto(admitHisAppUrl);
     await this.waitForPageReady();
+
+    const link = this.locator.inpatientListLink;
+    await link.waitFor({ state: 'visible', timeout: 15000 });
+    
     await this.safeClick(this.locator.inpatientListLink);
     await this.waitForPageReady();
   }
@@ -217,13 +222,13 @@ export class AdmissionPage extends BasePage {
     await this.waitUntilStable();
   }
 
-  async editPreadmitWardAndDoctor(patient: Patient): Promise<void> {
+  async editPreadmitWardAndDoctor(Patient: Patient): Promise<void> {
     // await this.page.locator('.mat-checkbox-inner-container').click();
-    await this.openPreadmitPatientForEdit(patient.nationalCode);
+    await this.openPreadmitPatientForEdit(Patient.nationalCode);
     
-    await this.ngSelect.selectByFormControl('wardfileld', patient.preadmitEditWard);
+    await this.ngSelect.selectByFormControl('wardfileld', Patient.preadmitEditWard);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
+    await this.ngSelect.selectByFormControl('doctorField', Patient.doctor);
     await this.waitUntilStable();
 
     await this.clearShebaInformationAndSave();

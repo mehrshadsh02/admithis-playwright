@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { BaseComponent } from './BaseComponent';
 
 export class NgSelect extends BaseComponent {
@@ -10,33 +10,31 @@ export class NgSelect extends BaseComponent {
     formControlName: string,
     value: string
   ): Promise<void> {
-
     await this.waitUntilStable();
 
     const select = this.page.locator(
       `ng-select[formcontrolname="${formControlName}"]`
     );
 
+    await expect(select).toBeVisible({ timeout: 30000 });
     await this.safeClick(select);
 
+    const panel = this.page.locator('.ng-dropdown-panel').last();
+    await expect(panel).toBeVisible({ timeout: 10000 });
+
     const input = select.locator("input[type='text']");
+    await expect(input).toBeVisible({ timeout: 10000 });
 
-    await this.safeFill(input, value);
+    await input.click();
+    await input.clear();
+    await input.fill(value);
 
-    const option = this.page
-      .locator('.ng-option')
-      .filter({ hasText: value })
-      .first();
+    const option = panel.locator('.ng-option', { hasText: value }).first();
+    await expect(option).toBeVisible({ timeout: 30000 });
 
-    await option.waitFor({
-      state: 'visible',
-      timeout: 30000,
-    });
+    await option.click();
 
-    await this.safeClick(option);
-
-    await input.press('Tab').catch(() => {});
-
+    await expect(panel).toBeHidden({ timeout: 10000 }).catch(() => {});
     await this.waitUntilStable();
   }
 }
