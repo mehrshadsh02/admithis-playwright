@@ -22,8 +22,12 @@ export const insuredAdult: Patient = {
   patientClass: 'بستری',
 
   ward: 'اطفال 2 - تخت خالی',
+  inpatientward:'',
   bed: 'اتاق1 - تخت عمومي - تخت18',
+
   preadmitEditWard: 'اطفال 2 - تخت خالی',
+  emergencyEditDoctor:'',
+  emergencyAdmitEditWard: '',
   doctor: 'Siavash Siavash',
   responsiblePatient: 'خود فرد',
   inpatientEditResponsiblePatient: 'همسر',

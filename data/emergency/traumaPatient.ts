@@ -22,8 +22,10 @@ export const traumaPatient: Patient = {
   patientClass: 'بستری',
 
   ward: 'اورژانس تحت نظر - تخت خالی',
-  bed: 'اتاق1 - تخت عمومي - تخت22',
+  inpatientward:'داخلی اعصاب - تخت خالی',
+  bed: 'اتاق1 - تخت عمومي - تخت',
   preadmitEditWard: '',
+  emergencyEditDoctor:'اصغر یوسفی',
   emergencyAdmitEditWard: 'بستری موقت کرونا - تخت خالی',
 
   doctor: 'Siavash Siavash',

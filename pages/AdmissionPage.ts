@@ -3,8 +3,35 @@ import { BasePage } from './BasePage';
 import { AdmissionLocator } from '../locators/AdmissionLocator';
 import { NgSelect } from '../components/NgSelect';
 import type { Patient } from '../data/models/Patient';
-// import { EmergencyAdmit_Patient } from '../../data/EmergencyAdmit_Patient';
-// import { TIMEOUT } from 'dns';
+
+type patientInformationInput = Pick<
+  Patient,
+  | 'maritalStatus'
+  | 'insuranceRelation'
+  | 'mobile'
+  | 'address'
+  | 'ShabaNo'
+  | 'BankAcountName'
+  | 'accompanyName'
+  | 'accompanyRelation'
+  | 'accompanyMobile'
+  | 'firstRecognition'
+  | 'howToRefer'
+  | 'causeOfHospitalization'
+>;
+
+type AdmissionAssignmentInput = Pick<
+  Patient,
+  | 'nationalCode'
+  | 'ward'
+  | 'bed'
+  | 'doctor'
+  | 'responsiblePatient'
+  | 'prepayment'
+  | 'preadmitEditWard'
+  | 'emergencyEditDoctor'
+  | 'inpatientward'
+>;
 
 export class AdmissionPage extends BasePage {
   private readonly locator = new AdmissionLocator(this.page);
@@ -53,6 +80,30 @@ export class AdmissionPage extends BasePage {
     await this.waitForPageReady();
   }
 
+  async selectEmergencyUnderObservation(): Promise<void> {
+    const checkbox = this.locator.emergencyUnderSprevisionCheckbox;
+
+    await checkbox.waitFor({
+      state: 'visible',
+    });
+
+    const input = checkbox.locator('input[type="checkbox"]');
+
+    await input.waitFor({
+      state: 'attached',
+    });
+
+    await expect(input).toBeEnabled();
+
+    if (!(await input.isChecked())) {
+      await checkbox.click();
+    }
+
+    await expect(input).toBeChecked();
+
+    await this.waitUntilStable();
+  }
+
   async searchPatient(nationalCode: string): Promise<void> {
     await this.selectIranianNationality();
 
@@ -63,42 +114,45 @@ export class AdmissionPage extends BasePage {
     await this.identityInquiry();
   }
 
-  async fillPatientInformation(Patient: Patient): Promise<void> {
-    await this.ngSelect.selectByFormControl('maritalStatus', Patient.maritalStatus);
-    await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('insurRelation', Patient.insuranceRelation);
+  async fillPatientInformation(patient: patientInformationInput): Promise<void> {
+
+    await this.ngSelect.selectIfEmptyByFormControl('maritalStatus',patient.maritalStatus);
     await this.waitUntilStable();
 
-    await this.locator.mobileNumber.fill(Patient.mobile);
-    await this.locator.address.fill(Patient.address);
-
-    await this.page.getByRole('textbox', { name: 'شماره شبا' }).fill(Patient.ShabaNo);
-    await this.page.getByRole('textbox', { name: 'صاحب شبا' }).fill(Patient.BankAcountName);
-
-    await this.locator.accompanyFullName.fill(Patient.accompanyName);
-    await this.ngSelect.selectByFormControl('relation', Patient.accompanyRelation);
+    await this.ngSelect.selectIfEmptyByFormControl('insurRelation',patient.insuranceRelation);
     await this.waitUntilStable();
-    await this.locator.accompanyMobileNumber.fill(Patient.accompanyMobile);
+
+    await this.fillIfEmpty(this.locator.mobileNumber, patient.mobile);
+    await this.fillIfEmpty(this.locator.address, patient.address);
+
+    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'شماره شبا' }), patient.ShabaNo);
+
+    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'صاحب شبا' }),patient.BankAcountName);
+
+    await this.locator.accompanyFullName.fill(patient.accompanyName);
+    await this.ngSelect.selectByFormControl('relation', patient.accompanyRelation);
+    await this.waitUntilStable();
+    await this.locator.accompanyMobileNumber.fill(patient.accompanyMobile);
 
     await this.locator.showClinicalFieldsButton.click();
     await this.waitForPageReady();
 
-    await this.ngSelect.selectByFormControl('firstRecognition', Patient.firstRecognition);
+    await this.ngSelect.selectByFormControl('firstRecognition', patient.firstRecognition);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('howToRefer', Patient.howToRefer);
+    await this.ngSelect.selectByFormControl('howToRefer', patient.howToRefer);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('causeOfHospitalization', Patient.causeOfHospitalization,);
+    await this.ngSelect.selectByFormControl('causeOfHospitalization', patient.causeOfHospitalization,);
     await this.waitUntilStable();
   }
 
-  async assignWardDoctorAndPrepayment(Patient: Patient): Promise<void> {
-    await this.ngSelect.selectByFormControl('wardfileld', Patient.ward);
+  async assignWardDoctorAndPrepayment(patient: AdmissionAssignmentInput): Promise<void> {
+    await this.ngSelect.selectByFormControl('wardfileld', patient.ward);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('doctorField', Patient.doctor);
+    await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('responsiblePatient', Patient.responsiblePatient);
+    await this.ngSelect.selectIfEmptyByFormControl('responsiblePatient',patient.responsiblePatient);
     await this.waitUntilStable();
-    await this.locator.prepayment.fill(Patient.prepayment);
+    await this.locator.prepayment.fill(patient.prepayment);
   }
 
   async saveAdmissionFiling(): Promise<void> {
@@ -145,6 +199,37 @@ export class AdmissionPage extends BasePage {
     };
   }
 
+  async confirmZeroPrepaymentIfVisible(): Promise<void> {
+    const dialog = this.locator.zeroPrepaymentDialog;
+    const confirmButton = this.locator.zeroPrepaymentConfirmButton;
+
+    try {
+      await dialog.waitFor({
+        state: 'visible',
+        timeout: 10000,
+      });
+    } catch {
+      // دیالوگ فقط برای پیش‌پرداخت صفر نمایش داده می‌شود.
+      return;
+    }
+
+    await expect(dialog).toContainText(
+      'مبلغ پیش پرداخت صفر است.آیا ادامه می دهید؟'
+    );
+
+    await expect(confirmButton).toBeVisible();
+    await expect(confirmButton).toBeEnabled();
+
+    await confirmButton.click();
+
+    await expect(dialog).toBeHidden({
+      timeout: 10000,
+    });
+
+    await this.waitForPageReady();
+  }
+
+
   async denyAdmitPrintPage(): Promise<void> {
     await this.locator.denyPrintButton.click();
     await this.waitForPageReady();
@@ -174,14 +259,14 @@ export class AdmissionPage extends BasePage {
     await this.locator.preadmitListCheckbox.click();
   }
 
-  async searchPreadmitPatientInList(nationalCode: string): Promise<void> {
+  async searchPatientInList(nationalCode: string): Promise<void> {
     await this.locator.nationalCode.fill(nationalCode);
     await this.locator.listSearchButton.click();
     await this.waitForPageReady();
   }
 
   async openPreadmitPatientForEdit(nationalCode: string): Promise<void> {
-    await this.searchPreadmitPatientInList(nationalCode);
+    await this.searchPatientInList(nationalCode);
     await this.locator.visibleRowActionButton.click();
     await this.waitForPageReady();
     await this.locator.editButton.click();
@@ -222,13 +307,12 @@ export class AdmissionPage extends BasePage {
     await this.waitUntilStable();
   }
 
-  async editPreadmitWardAndDoctor(Patient: Patient): Promise<void> {
-    // await this.page.locator('.mat-checkbox-inner-container').click();
-    await this.openPreadmitPatientForEdit(Patient.nationalCode);
+  async editPreadmitWardAndDoctor(patient: AdmissionAssignmentInput): Promise<void> {
+    await this.openPreadmitPatientForEdit(patient.nationalCode);
     
-    await this.ngSelect.selectByFormControl('wardfileld', Patient.preadmitEditWard);
+    await this.ngSelect.selectByFormControl('wardfileld', patient.preadmitEditWard);
     await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('doctorField', Patient.doctor);
+    await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
     await this.waitUntilStable();
 
     await this.clearShebaInformationAndSave();
@@ -249,7 +333,7 @@ export class AdmissionPage extends BasePage {
   }
 
   async cancelPreadmit(nationalCode: string): Promise<void> {
-    await this.searchPreadmitPatientInList(nationalCode);
+    await this.searchPatientInList(nationalCode);
 
     console.log('[ACTION] Opening admission actions menu...');
 
@@ -265,4 +349,102 @@ export class AdmissionPage extends BasePage {
     await this.locator.confirmYesButton.click();
     await this.waitForPageReady();
   }
+
+  async openEmengencyPatientList(): Promise<void> {
+    const admitHisAppUrl = process.env.ADMITHIS_APP_URL;
+
+    if (!admitHisAppUrl) {
+      throw new Error('ADMITHIS_APP_URL is required to open the AdmitHis app.');
+    }
+
+    await this.page.goto(admitHisAppUrl);
+    await this.waitForPageReady();
+
+    const link = this.locator.EmergencyPatientListLink;
+    await link.waitFor({ state: 'visible', timeout: 15000 });
+    
+    await this.safeClick(this.locator.EmergencyPatientListLink);
+    await this.waitForPageReady();
+  }
+
+  async searchEmergencytpatientInList(nationalCode: string): Promise<void> {
+    await this.locator.nationalCode.fill(nationalCode);
+    await this.locator.listSearchButton.click();
+    await this.waitForPageReady();
+  }
+
+  async openEmergencyPatientForEdit(nationalCode: string): Promise<void> {
+    await this.searchPatientInList(nationalCode);
+    await this.waitForPageReady();
+    await this.locator.editButton.click();
+    await this.waitForPageReady();
+    await this.locator.editButton.click();
+    await this.waitForPageReady();
+  }
+
+  async editEmergencyPatientInformation(patient: AdmissionAssignmentInput): Promise<void> {
+    await this.openEmergencyPatientForEdit(patient.nationalCode);
+    
+    await this.ngSelect.selectByFormControl('doctorField', patient.emergencyEditDoctor);
+    await this.waitUntilStable();
+
+    await this.clearShebaInformationAndSave();
+    const saveResult = await this.saveEditAdmissionFiling();
+
+    if (!saveResult.success) {
+      console.warn(`[FLOW] ذخیره پرونده ناموفق بود. پیام: ${saveResult.message}`);
+      console.warn('[FLOW] مرحله deny print رد شد و ادامه تست انجام می‌شود.');
+      return;
+    }
+
+    await this.denyAdmitPrintPage();
+  }
+
+  async assignEmergencyWardDoctor(patient: AdmissionAssignmentInput): Promise<void> {
+    await this.ngSelect.selectByFormControl('wardfileld', patient.ward);
+    await this.waitUntilStable();
+    await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
+    await this.waitUntilStable();
+    await this.ngSelect.selectByFormControl('bedNum', patient.bed);
+    await this.waitUntilStable();
+    await this.ngSelect.selectIfEmptyByFormControl('responsiblePatient',patient.responsiblePatient);
+    await this.waitUntilStable();
+    await this.locator.prepayment.fill(patient.prepayment);
+  }
+
+  async sendtowardEmergencyPatient(patient: AdmissionAssignmentInput): Promise<void> {
+    await this.searchPatientInList(patient.nationalCode);
+
+    await this.page.getByRole('button', { description: 'انتقال به بخش', exact: true }).first().click();
+
+    await this.waitForPageReady();
+    await this.locator.editButton.click();
+    await this.waitForPageReady();
+  }
+
+  async fillinformationEmergencyPatienttosendtoward(patient: AdmissionAssignmentInput): Promise<void> {
+    // await this.openEmergencyPatientForEdit(patient.nationalCode);
+    
+    await this.ngSelect.selectByFormControl('doctorField', patient.emergencyEditDoctor);
+    await this.waitUntilStable();
+
+    await this.ngSelect.selectByFormControl('wardfileld', patient.inpatientward);
+    await this.waitUntilStable();
+
+    await this.ngSelect.selectByFormControl('bedNum', patient.bed);
+    await this.waitUntilStable();
+
+    await this.clearShebaInformationAndSave();
+    await this.locator.saveFileButton.click();
+    //const saveResult = await this.saveEditAdmissionFiling();
+
+    // if (!saveResult.success) {
+    //   console.warn(`[FLOW] ذخیره پرونده ناموفق بود. پیام: ${saveResult.message}`);
+    //   console.warn('[FLOW] مرحله deny print رد شد و ادامه تست انجام می‌شود.');
+    //   return;
+    // }
+
+    // await this.denyAdmitPrintPage();
+  }
+
 }

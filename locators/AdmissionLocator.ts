@@ -92,10 +92,6 @@ export class AdmissionLocator {
     return this.page.locator("//img[@src='assets/icons/inpatient.svg']/ancestor::a");
   }
 
-  // readonly inpatientListLink = this.page.locator(
-  //   "//img[@src='assets/icons/inpatient.svg']/ancestor::a"
-  // );
-
   get preadmitListCheckbox(): Locator {
     return this.page.locator("xpath=//span[contains(@class,'mat-checkbox-inner-container')]");
   }
@@ -112,8 +108,12 @@ export class AdmissionLocator {
     return this.page.locator('button.mat-tooltip-trigger.btn-action.ng-star-inserted');
   }
 
+  // get editButton(): Locator {
+  //   return this.page.locator('button.mat-tooltip-trigger.btn.btn-edit1');
+  // }
+
   get editButton(): Locator {
-    return this.page.locator('button.mat-tooltip-trigger.btn.btn-edit1');
+    return this.page.locator('button').filter({has: this.page.locator('mat-icon', { hasText: 'edit' })});
   }
 
   get cancelButton(): Locator {
@@ -134,5 +134,21 @@ export class AdmissionLocator {
     return this.page.locator('button[mat-menu-item]').filter({ hasText: 'لغو پذیرش' });
   }
 
+  get emergencyUnderSprevisionCheckbox(): Locator {
+    return this.page.locator('mat-checkbox[formcontrolname="emergencyUnderSprevision"]');
+  }
+
+  get zeroPrepaymentDialog(): Locator {
+    return this.page.locator('.swal2-popup').filter({hasText: 'مبلغ پیش پرداخت صفر است',});
+  }
+
+  get zeroPrepaymentConfirmButton(): Locator {
+    return this.zeroPrepaymentDialog.getByRole('button', {name: 'بله',exact: true,});
+  }
+
+  get EmergencyPatientListLink(): Locator {
+    return this.page.locator("//img[@src='assets/icons/patients-monitored.svg']/ancestor::a");
+  }
+  
   
 }

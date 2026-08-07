@@ -53,4 +53,32 @@ export abstract class BasePage {
   async verifyUrl(url: RegExp | string): Promise<void> {
     await expect(this.page).toHaveURL(url);
   }
+
+  
+  async fillIfEmpty(locator: Locator, value: string): Promise<void> {
+    const currentValue = (await locator.inputValue()).trim();
+
+    if (currentValue !== '') {
+      return;
+    }
+
+    await locator.fill(value);
+  }
+
+  async safeClickCartable(locator: Locator): Promise<void> {
+    await this.waitUntilStable();
+    await expect(locator).toBeAttached({ timeout: 15000 });
+    await expect(locator).toBeVisible({ timeout: 15000 });
+    await expect(locator).toBeEnabled({ timeout: 15000 });
+
+    try {
+      await locator.scrollIntoViewIfNeeded({ timeout: 5000 });
+    } catch {
+      // بعضی کارت‌ها داخل containerهای خاص هستند و اسکرول استاندارد روی آن‌ها fail می‌شود.
+    }
+
+    await locator.click({ timeout: 15000 });
+    await this.waitUntilStable();
+  }
+
 }

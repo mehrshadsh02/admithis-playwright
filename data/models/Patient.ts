@@ -26,13 +26,16 @@ export interface Patient {
 
   // اطلاعات پذیرش و بخش (اختیاری)
   ward: string;
-  bed?: string;
+  inpatientward:string;
+  bed: string;
   doctor: string;
   prepayment: string;
   refundComment: string;
 
   // فیلدهای اختصاصی سناریوی پیش‌پذیرش (Preadmit)
   preadmitEditWard: string;
+
+  emergencyEditDoctor: string;
 
   // فیلدهای اختصاصی سناریوی اورژانس (Emergency)
   emergencyAdmitEditWard?: string; 
