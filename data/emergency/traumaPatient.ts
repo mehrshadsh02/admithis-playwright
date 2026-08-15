@@ -5,6 +5,7 @@ export const traumaPatient: Patient = {
 
   maritalStatus: 'متاهل',
   insuranceRelation: 'خود فرد',
+  insuranceName:'',
 
   mobile: '09196964067',
   address: 'dfgdfgdfgd',

@@ -18,11 +18,13 @@ type patientInformationInput = Pick<
   | 'firstRecognition'
   | 'howToRefer'
   | 'causeOfHospitalization'
+  | 'patientClass'
 >;
 
 type AdmissionAssignmentInput = Pick<
   Patient,
   | 'nationalCode'
+  | 'insuranceName'
   | 'ward'
   | 'bed'
   | 'doctor'
@@ -160,6 +162,51 @@ export class AdmissionPage extends BasePage {
     await this.waitForPageReady();
   }
 
+  async saveAdmissionFilingEmergency(): Promise<{
+    admitId: number;
+    admitDate: string;
+    titleType: number;
+    fileFormationId: number;
+  }> {
+    const responsePromise = this.page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/Filing/AddFiling') &&
+        response.request().method() === 'POST',
+      {
+        timeout: 30000,
+      }
+    );
+
+    await this.locator.saveFileButton.click();
+
+    await this.confirmZeroPrepaymentIfVisible();
+
+    const response = await responsePromise;
+
+    if (!response.ok()) {
+      throw new Error(
+        `AddFiling failed with status ${response.status()}`
+      );
+    }
+
+    const json = (await response.json()) as {
+      admitId: number;
+      admitDate: string;
+      titleType: number;
+      fileFormationId: number;
+    };
+
+    await this.waitForPageReady();
+
+    return {
+      admitId: json.admitId,
+      admitDate: json.admitDate,
+      titleType: json.titleType,
+      fileFormationId: json.fileFormationId,
+    };
+  }
+
+
   async saveEditAdmissionFiling(): Promise<{ success: boolean; message?: string }> {
     const editFilingResponsePromise = this.page.waitForResponse(
       (response) =>
@@ -276,7 +323,6 @@ export class AdmissionPage extends BasePage {
   async clearShebaInformationAndSave(): Promise<void> {
     console.log('[ACTION] Starting to clear Sheba Information...');
 
-    // 1) خالی کردن شماره شبا بدون لاگ‌کردن مقدار حساس
     const currentSheba = await this.locator.shebaNo.inputValue();
     if (currentSheba.trim() !== '') {
       console.warn('[LOG] فیلد شماره شبا اشتباه پر شده بود و خالی شد.');
@@ -285,7 +331,6 @@ export class AdmissionPage extends BasePage {
     }
     await this.safeFill(this.locator.shebaNo, '');
 
-    // 2) خالی کردن صاحب شبا بدون لاگ‌کردن مقدار
     const currentOwner = await this.locator.shebaOwner.inputValue();
     if (currentOwner.trim() !== '') {
       console.warn('[LOG] فیلد صاحب شبا اشتباه پر شده بود و خالی شد.');
@@ -294,7 +339,6 @@ export class AdmissionPage extends BasePage {
     }
     await this.safeFill(this.locator.shebaOwner, '');
 
-    // 3) تیک‌زدن "شبا ندارد" با کلیک روی label
     const missedShebaInput = this.locator.missedShebaInput;
     const missedShebaLabel = this.locator.missedShebaLabel;
 
@@ -324,7 +368,7 @@ export class AdmissionPage extends BasePage {
 
       await this.safeClick(this.locator.inpatientListLink);
       await this.waitForPageReady();  
-      await this.loadPreadmitPatientList();
+      // await this.loadPreadmitPatientList();
       return;
     }
 
@@ -423,8 +467,7 @@ export class AdmissionPage extends BasePage {
   }
 
   async fillinformationEmergencyPatienttosendtoward(patient: AdmissionAssignmentInput): Promise<void> {
-    // await this.openEmergencyPatientForEdit(patient.nationalCode);
-    
+
     await this.ngSelect.selectByFormControl('doctorField', patient.emergencyEditDoctor);
     await this.waitUntilStable();
 
@@ -436,15 +479,83 @@ export class AdmissionPage extends BasePage {
 
     await this.clearShebaInformationAndSave();
     await this.locator.saveFileButton.click();
-    //const saveResult = await this.saveEditAdmissionFiling();
+  }
 
-    // if (!saveResult.success) {
-    //   console.warn(`[FLOW] ذخیره پرونده ناموفق بود. پیام: ${saveResult.message}`);
-    //   console.warn('[FLOW] مرحله deny print رد شد و ادامه تست انجام می‌شود.');
-    //   return;
-    // }
+  async fillPatientInformationforInapatient(patient: patientInformationInput): Promise<void> {
 
-    // await this.denyAdmitPrintPage();
+    await this.ngSelect.selectIfEmptyByFormControl('maritalStatus',patient.maritalStatus);
+    await this.waitUntilStable();
+
+    await this.ngSelect.selectIfEmptyByFormControl('insurRelation',patient.insuranceRelation);
+    await this.waitUntilStable();
+
+    await this.fillIfEmpty(this.locator.mobileNumber, patient.mobile);
+    await this.fillIfEmpty(this.locator.address, patient.address);
+
+    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'شماره شبا' }), patient.ShabaNo);
+
+    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'صاحب شبا' }),patient.BankAcountName);
+
+    await this.locator.accompanyFullName.fill(patient.accompanyName);
+    await this.ngSelect.selectByFormControl('relation', patient.accompanyRelation);
+    await this.waitUntilStable();
+    await this.locator.accompanyMobileNumber.fill(patient.accompanyMobile);
+
+    await this.locator.showClinicalFieldsButton.click();
+    await this.waitForPageReady();
+
+    await this.ngSelect.selectByFormControl('patientClass',patient.patientClass);
+    await this.waitUntilStable();
+
+    await this.ngSelect.selectByFormControl('firstRecognition', patient.firstRecognition);
+    await this.waitUntilStable();
+    await this.ngSelect.selectByFormControl('howToRefer', patient.howToRefer);
+    await this.waitUntilStable();
+    await this.ngSelect.selectByFormControl('causeOfHospitalization', patient.causeOfHospitalization,);
+    await this.waitUntilStable();
+  }
+
+  async assignInpatientWardDoctor(patient: AdmissionAssignmentInput): Promise<void> {
+    await this.ngSelect.selectByFormControl('wardfileld', patient.ward);
+    await this.waitUntilStable();
+    await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
+    await this.waitUntilStable();
+    await this.ngSelect.selectByFormControl('bedNum', patient.bed);
+    await this.waitUntilStable();
+    await this.ngSelect.selectIfEmptyByFormControl('responsiblePatient',patient.responsiblePatient);
+    await this.waitUntilStable();
+    await this.locator.prepayment.fill(patient.prepayment);
+  }
+
+  async openInpatientAdmitForEdit(nationalCode: string): Promise<void> {
+    await this.searchPatientInList(nationalCode);
+    await this.locator.visibleRowActionButton.click();
+    await this.waitForPageReady();
+    await this.locator.editButton.click();
+    await this.waitForPageReady();
+  }
+
+  async editInpatientInsur(patient: AdmissionAssignmentInput): Promise<void> {
+    await this.openInpatientAdmitForEdit(patient.nationalCode);
+    
+    await this.ngSelect.selectByFormControl('insuranceName', patient.insuranceName);
+    await this.waitUntilStable();
+
+    await this.clearShebaInformationAndSave();
+    const saveResult = await this.saveEditAdmissionFiling();
+
+    if (!saveResult.success) {
+      console.warn(`[FLOW] ذخیره پرونده ناموفق بود. پیام: ${saveResult.message}`);
+      console.warn('[FLOW] مرحله deny print رد شد و ادامه تست انجام می‌شود.');
+
+      await this.safeClick(this.locator.inpatientListLink);
+      await this.waitForPageReady();  
+      // await this.loadPreadmitPatientList();
+      return;
+    }
+
+    await this.denyAdmitPrintPage();
+    // await this.loadPreadmitPatientList();
   }
 
 }

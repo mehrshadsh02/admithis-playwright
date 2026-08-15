@@ -7,6 +7,7 @@ export interface Patient {
   // اطلاعات بیمه‌ای و عمومی (اختیاری بر اساس سناریو)
   maritalStatus: string;
   insuranceRelation: string;
+  insuranceName:string;
   responsiblePatient: string;
 
   // اطلاعات بانکی (اختیاری)

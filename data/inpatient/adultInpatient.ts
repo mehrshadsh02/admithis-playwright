@@ -1,19 +1,19 @@
 import type { Patient } from '../models/Patient';
 
-export const insuredAdult: Patient = {
-  nationalCode: '1520554001',
+export const adultInpatient: Patient = {
+  nationalCode: '3151025013',
 
   maritalStatus: 'مجرد',
   insuranceRelation: 'خود فرد',
-  insuranceName:'',
+  insuranceName:'آزاد',
 
   mobile: '09383509316',
   address: 'dfgdfgdfgd',
 
   ShabaNo: '012025000001425236252145',
-  BankAcountName: 'مهرشاد شیخ الاسلامی',
+  BankAcountName: 'محمدپارسا محمدی',
 
-  accompanyName: 'مهرشاد شیخ الاسلامی',
+  accompanyName: 'محمدپارسا محمدی',
   accompanyRelation: 'خود فرد',
   accompanyMobile: '09383586316',
 
@@ -24,7 +24,7 @@ export const insuredAdult: Patient = {
 
   ward: 'اطفال 2 - تخت خالی',
   inpatientward:'',
-  bed: 'اتاق1 - تخت عمومي - تخت18',
+  bed: 'اتاق1 - تخت عمومي - تخت',
 
   preadmitEditWard: 'اطفال 2 - تخت خالی',
   emergencyEditDoctor:'',
@@ -33,6 +33,6 @@ export const insuredAdult: Patient = {
   responsiblePatient: 'خود فرد',
   inpatientEditResponsiblePatient: 'همسر',
 
-  prepayment: '10000',
+  prepayment: '',
   refundComment: 'test',
 };
