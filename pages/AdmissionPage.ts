@@ -333,9 +333,9 @@ export class AdmissionPage extends BasePage {
 
     const currentOwner = await this.locator.shebaOwner.inputValue();
     if (currentOwner.trim() !== '') {
-      console.warn('[LOG] فیلد صاحب شبا اشتباه پر شده بود و خالی شد.');
+      console.warn('[BUG] The Sheba field was filled in incorrectly and became empty.');
     } else {
-      console.log('[LOG] فیلد صاحب شبا از قبل خالی بود.');
+      console.log('[BUG] The field of sheba was already empty');
     }
     await this.safeFill(this.locator.shebaOwner, '');
 
@@ -386,7 +386,7 @@ export class AdmissionPage extends BasePage {
 
     await this.locator.cancelAdmissionMenuItem.waitFor({ state: 'visible' });
 
-    console.log('[ACTION] Clicking "لغو پذیرش"...');
+    console.log('[ACTION] Clicking "Cancel Admission"...');
 
     await this.locator.cancelAdmissionMenuItem.click();
 

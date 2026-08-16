@@ -7,6 +7,40 @@ export class CashPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
+
+    // Prevent Chrome print dialog / preview
+    this.page.context().addInitScript(() => {
+      Object.defineProperty(globalThis, 'print', {
+        value: () => {},
+        writable: false,
+      });
+    });
+
+    // Prevent receipt popup from blocking the test
+    this.page.on('popup', async (popup) => {
+      try {
+        console.log(
+          `[CashPage] Popup detected: ${popup.url()}`
+        );
+
+        await popup.waitForLoadState('domcontentloaded').catch(
+          () => {}
+        );
+
+        if (!popup.isClosed()) {
+          await popup.close();
+
+          console.log(
+            '[CashPage] Receipt popup closed.'
+          );
+        }
+      } catch (error) {
+        console.log(
+          '[CashPage] Popup handling error:',
+          error
+        );
+      }
+    });
   }
 
   async open(): Promise<void> {
@@ -15,6 +49,8 @@ export class CashPage extends BasePage {
     if (!cashAppUrl) {
       throw new Error('CASH_APP_URL is required to open the Cash app.');
     }
+
+    // await this.page.addInitScript('window.print = () => {};');
 
     await this.page.goto(cashAppUrl);
 
@@ -25,37 +61,6 @@ export class CashPage extends BasePage {
     await this.page.reload();
     await this.waitForPageReady();
   }
-
-  // async searchPatientByNationalCode(nationalCode: string): Promise<void> {
-    
-  //   const getPatientsResponsePromise = this.page.waitForResponse(
-  //       (response) =>
-  //           response.url().includes('/api/Cash/GetPatients') &&
-  //           response.request().method() === 'POST' &&
-  //           response.status() === 200 
-  //   );
-
-  //   await this.locator.nationalCode.waitFor({ state: 'visible' });
-  //   await this.locator.nationalCode.fill(nationalCode);
-    
-  //   console.log(`[ACTION] Searching for patient with National Code: ${nationalCode}`);
-  //   await this.locator.searchButton.click();
-  //   await this.waitForPageReady();
-    
-  //   const response = await getPatientsResponsePromise;
-  //   const responseBody = await response.json();
-
-  //   if (responseBody.isSuccess && Array.isArray(responseBody.resultObject) && responseBody.resultObject.length === 0) {
-        
-  //       const errorMessage = `بازپرداخت بیمار در صندوق مشاهده نشد - کد ملی: ${nationalCode}`;
-  //       console.error(`[CASH FAIL-FAST] API returned empty result: ${errorMessage}`);
-        
-  //       throw new Error(errorMessage);
-  //   }
-    
-  //   await this.locator.rowByNationalCode(nationalCode).waitFor({ state: 'visible' });
-  //   console.log(`[SUCCESS] Patient found and row is visible.`);
-  // }
 
   async searchPatientByNationalCode(nationalCode: string): Promise<void> {
     await this.locator.nationalCode.waitFor({ state: 'visible' });
