@@ -373,7 +373,8 @@ export class AdmissionPage extends BasePage {
     }
 
     await this.denyAdmitPrintPage();
-    await this.loadPreadmitPatientList();
+    await this.waitForPageReady();
+    // await this.loadPreadmitPatientList();
   }
 
   async cancelPreadmit(nationalCode: string): Promise<void> {

@@ -62,6 +62,12 @@ test('001-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
     await admission.loadPreadmitPatientList();
 
     await admission.editPreadmitWardAndDoctor(insuredAdult);
+  });
+
+  await test.step('Cancel PreAdmit', async () => {
+    const admission = new AdmissionPage(page);
+    
+    await admission.openInPatientList();
 
     await admission.loadPreadmitPatientList();
 
