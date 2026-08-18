@@ -1,15 +1,15 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import { BaseComponent } from './BaseComponent';
 
-export class NgSelect extends BaseComponent {constructor(page: Page) {super(page);}
+export class NgSelect extends BaseComponent {
+  constructor(page: Page) {
+    super(page);
+  }
 
-  async selectByFormControl(formControlName: string,value: string): Promise<void> {
-
+  async selectByFormControl(formControlName: string, value: string): Promise<void> {
     await this.waitUntilStable();
 
-    const select = this.page.locator(
-      `ng-select[formcontrolname="${formControlName}"]`
-    );
+    const select = this.page.locator(`ng-select[formcontrolname="${formControlName}"]`);
 
     await expect(select).toBeVisible({ timeout: 30000 });
     await this.safeClick(select);
@@ -29,17 +29,16 @@ export class NgSelect extends BaseComponent {constructor(page: Page) {super(page
 
     await option.click();
 
-    await expect(panel).toBeHidden({ timeout: 10000 }).catch(() => {});
+    await expect(panel)
+      .toBeHidden({ timeout: 10000 })
+      .catch(() => {});
     await this.waitUntilStable();
   }
 
-  async selectIfEmptyByFormControl(formControlName: string,value: string): Promise<void> {
-    
+  async selectIfEmptyByFormControl(formControlName: string, value: string): Promise<void> {
     await this.waitUntilStable();
 
-    const select = this.page.locator(
-      `ng-select[formcontrolname="${formControlName}"]`
-    );
+    const select = this.page.locator(`ng-select[formcontrolname="${formControlName}"]`);
 
     await expect(select).toBeVisible({ timeout: 30000 });
 
@@ -50,9 +49,7 @@ export class NgSelect extends BaseComponent {constructor(page: Page) {super(page
     if (selectedValueCount > 0) {
       const selectedTexts = await selectedValues.allTextContents();
 
-      const hasSelectedValue = selectedTexts.some(
-        (text) => text.trim().length > 0
-      );
+      const hasSelectedValue = selectedTexts.some((text) => text.trim().length > 0);
 
       if (hasSelectedValue) {
         return;
@@ -61,5 +58,4 @@ export class NgSelect extends BaseComponent {constructor(page: Page) {super(page
 
     await this.selectByFormControl(formControlName, value);
   }
-
 }

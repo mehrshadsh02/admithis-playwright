@@ -5,7 +5,6 @@ import { insuredAdult } from '../../data/preadmit';
 import { traumaPatient } from '../../data/emergency';
 import { adultInpatient } from '../../data/inpatient';
 import { CartableFlow } from '../../flows/CartableFlow';
-import type { Patient } from '../data/models/Patient';
 import { ApiClient } from '../../Api/ApiClient';
 import { PatientApi } from '../../Api/PatientApi';
 import { Database } from '../../DB/Database';
@@ -18,7 +17,6 @@ export interface EmergencyCreateResult {
   titleType: number;
   fileFormationId: number;
 }
-
 
 test('001-Create,Edit and Cancel preadmit filing', async ({ page, context }) => {
   await context.addCookies([
@@ -56,7 +54,7 @@ test('001-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
 
   await test.step('Edit PreAdmit', async () => {
     const admission = new AdmissionPage(page);
-    
+
     await admission.openInPatientList();
 
     await admission.loadPreadmitPatientList();
@@ -66,7 +64,7 @@ test('001-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
 
   await test.step('Cancel PreAdmit', async () => {
     const admission = new AdmissionPage(page);
-    
+
     await admission.openInPatientList();
 
     await admission.loadPreadmitPatientList();
@@ -79,7 +77,6 @@ test('001-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
     await cash.refundPatientByNationalCode(insuredAdult.nationalCode, insuredAdult.refundComment);
   });
 });
-
 
 test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, request }) => {
   await context.addCookies([
@@ -103,7 +100,7 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
     insuranceId: 0,
     insuranceExpDate: '',
     bedId: 0,
-    wardIdIn:0,
+    wardIdIn: 0,
   };
 
   await test.step('Create Emergency Filing', async () => {
@@ -119,9 +116,6 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
 
     await admission.assignEmergencyWardDoctor(traumaPatient);
 
-    // await admission.saveAdmissionFilingEmergency();
-
-    // const result = await admission.saveAdmissionFiling();
     createResult = await admission.saveAdmissionFilingEmergency();
 
     await admission.confirmZeroPrepaymentIfVisible();
@@ -129,11 +123,9 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
     await admission.denyAdmitPrintPage();
 
     await expect(page).toHaveURL(/8019/);
-
-    // return result;
   });
 
- await test.step('Get Emergency Patient Data', async () => {
+  await test.step('Get Emergency Patient Data', async () => {
     if (!createResult) {
       throw new Error('Emergency admission create result was not captured.');
     }
@@ -146,24 +138,17 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
     const apiClient = new ApiClient(request);
     const patientApi = new PatientApi(apiClient);
 
-    const result = await patientApi.getPatientByAdmitId(
-      emergencyState.admitId
-    );
+    const result = await patientApi.getPatientByAdmitId(emergencyState.admitId);
 
-    emergencyState.diagnosisName =
-      result.hisAdmitDto.diagnosis;
+    emergencyState.diagnosisName = result.hisAdmitDto.diagnosis;
 
-    emergencyState.insuranceId =
-      result.hisAdmitDto.insuranceID;
+    emergencyState.insuranceId = result.hisAdmitDto.insuranceID;
 
-    emergencyState.insuranceExpDate =
-      result.hisAdmitDto.insuranceExpDate;
+    emergencyState.insuranceExpDate = result.hisAdmitDto.insuranceExpDate;
 
-    emergencyState.bedId =
-      result.hisAdmitDto.bedId;
+    emergencyState.bedId = result.hisAdmitDto.bedId;
 
-    emergencyState.wardIdIn =
-      result.hisAdmitDto.wardIdIn;  
+    emergencyState.wardIdIn = result.hisAdmitDto.wardIdIn;
   });
 
   await test.step('Validate Emergency Database', async () => {
@@ -172,10 +157,7 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
     try {
       await db.connect();
 
-      await validateEmergencyAdmission(
-        db,
-        emergencyState
-      );
+      await validateEmergencyAdmission(db, emergencyState);
     } finally {
       await db.close();
     }
@@ -183,7 +165,7 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
 
   await test.step('Edit Emergency Admit', async () => {
     const admission = new AdmissionPage(page);
-    
+
     await admission.openEmengencyPatientList();
 
     await admission.editEmergencyPatientInformation(traumaPatient);
@@ -193,18 +175,16 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
     const cartable = new CartableFlow(page);
 
     await cartable.locateAndOpenPatientAdmission(traumaPatient.nationalCode);
- 
   });
 
   await test.step('Edit PreAdmit', async () => {
     const admission = new AdmissionPage(page);
-    
+
     await admission.openEmengencyPatientList();
 
     await admission.sendtowardEmergencyPatient(traumaPatient);
 
     await admission.fillinformationEmergencyPatienttosendtoward(traumaPatient);
-
   });
 });
 
@@ -240,11 +220,9 @@ test('003-Create and Edit Inpatient filing', async ({ page, context }) => {
 
   await test.step('Edit Inpatient Admit', async () => {
     const admission = new AdmissionPage(page);
-    
+
     await admission.openInPatientList();
 
     await admission.editInpatientInsur(adultInpatient);
   });
-
 });
-

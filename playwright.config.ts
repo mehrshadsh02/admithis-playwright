@@ -20,10 +20,7 @@ export default defineConfig({
     timeout: 100_000,
   },
 
-  reporter: [
-    ['list'],
-    ['html', { open: 'never' }]
-  ],
+  reporter: [['./helpers/logger/PlaywrightLoggerReporter.ts'], ['html', { open: 'never' }]],
 
   use: {
     baseURL: process.env.ADMITHIS_APP_URL,
@@ -49,5 +46,5 @@ export default defineConfig({
     },
   ],
 
-  outputDir: 'test-results'
+  outputDir: 'test-results',
 });
