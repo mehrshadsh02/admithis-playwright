@@ -207,6 +207,31 @@ The inpatient workflow extends the existing patient model rather than creating d
 ## Phase 4: SafeActions & WaitEngine Integration with Centralized Logger
 
 ### Objectives
+
 - Integrate Playwright UI interactions (`safeClick`, `safeFill`, `safeClickCartable`, `fillIfEmpty`) with `logger`.
 - Enhance `WaitEngine` (`waitUntilStable`, `waitForPageReady`) to trace Angular spinner `.back-spenner` state changes.
 - Provide contextual action descriptions for detailed test execution traces.
+
+### Final contracts
+
+`pages/BasePage.ts` is the compatibility boundary for safe page actions. The implementation
+must preserve its public method names and existing callers while applying these contracts:
+
+- `waitForPageReady` waits for `domcontentloaded`, then waits for the `.back-spenner`
+  spinner to be hidden through `waitUntilStable`.
+- `waitUntilStable(timeout)` waits for `.back-spenner` with a configurable timeout. A
+  missing spinner, a detached spinner, or a timeout is a non-fatal condition; the outcome is
+  recorded through the centralized logger.
+- `safeClick` waits for stability, scrolls to the locator, verifies visibility and enabled
+  state, clicks, waits for post-click stability, and logs both success and failure. Error
+  details must pass through the logger sanitization pipeline.
+- `safeFill` follows the same pre/post stability and scroll contract, verifies visibility,
+  fills the value, and logs only the contextual description—not the actual value.
+- `safeClickCartable` verifies attached, visible, and enabled state; attempts scrolling with
+  container errors handled as warnings; uses an independent click timeout; and logs success
+  or failure.
+- `fillIfEmpty` reads the current input value, skips a non-empty field, and fills only an
+  empty field. Neither the existing nor the new sensitive value may be written to logs.
+
+All action descriptions are caller-provided context and must remain free of patient data,
+passwords, tokens, and other secrets.

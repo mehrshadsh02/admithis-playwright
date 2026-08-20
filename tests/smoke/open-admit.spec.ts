@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../fixtures/test';
 
 test('Open AdmitHis with token', async ({ page, context }) => {
   await context.addCookies([

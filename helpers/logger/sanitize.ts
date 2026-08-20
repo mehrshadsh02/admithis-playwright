@@ -3,7 +3,7 @@ const sensitiveKeyPattern =
 
 const bearerPattern = /bearer\s+[a-z0-9._~+/=-]+/gi;
 const assignmentPattern =
-  /\b(token|password|passwd|pwd|cookie|authorization|auth|secret|api[-_]?key|apikey|session)\s*[:=]\s*[^,\s;]+/gi;
+  /\b(token|password|passwd|pwd|cookie|authorization|auth|secret|api[-_]?key|apikey|session)\s*[:=]\s*[^,\s;&?#]+/gi;
 
 export const REDACTED = '[REDACTED]';
 

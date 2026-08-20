@@ -1,6 +1,11 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { logger } from '../helpers/logger';
 
+const SPINNER_SELECTOR = '.back-spenner';
+const DEFAULT_STABILITY_TIMEOUT = 30_000;
+const CARTABLE_CLICK_TIMEOUT = 15_000;
+const CARTABLE_SCROLL_TIMEOUT = 5_000;
+
 export abstract class BasePage {
   protected constructor(protected readonly page: Page) {}
 
@@ -17,28 +22,26 @@ export abstract class BasePage {
     logger.debug('[WaitEngine] Page ready and stable.');
   }
 
-  async waitUntilStable(timeout = 30000): Promise<void> {
-    const spinner = this.page.locator('.back-spenner');
+  async waitUntilStable(timeout = DEFAULT_STABILITY_TIMEOUT): Promise<void> {
+    const spinner = this.page.locator(SPINNER_SELECTOR);
 
     try {
-      if (await spinner.count()) {
-        logger.debug('[WaitEngine] Angular spinner (.back-spenner) active. Waiting to hide...');
-        await spinner.waitFor({
-          state: 'hidden',
-          timeout,
-        });
-        logger.debug('[WaitEngine] Angular spinner hidden.');
+      if (!(await spinner.count())) {
+        logger.debug('[WaitEngine] No Angular spinner found; page treated as stable.');
+        return;
       }
-    } catch {
-      logger.warn(`[WaitEngine] Spinner wait exceeded ${timeout}ms or element detached.`);
-    }
 
-    // if (await spinner.count()) {
-    //   await spinner.waitFor({
-    //     state: 'hidden',
-    //     timeout,
-    //   }).catch(() => {});
-    // }
+      logger.debug(`[WaitEngine] Waiting for Angular spinner (${SPINNER_SELECTOR}) to hide...`);
+      await spinner.first().waitFor({
+        state: 'hidden',
+        timeout,
+      });
+      logger.success('[WaitEngine] Angular spinner hidden; page is stable.');
+    } catch (error) {
+      logger.warn(`[WaitEngine] Spinner wait did not complete within ${timeout}ms; continuing.`, {
+        error,
+      });
+    }
   }
 
   async safeClick(locator: Locator, description = 'Element'): Promise<void> {
@@ -53,16 +56,9 @@ export abstract class BasePage {
       await this.waitUntilStable();
       logger.success(`[SafeAction] Clicked: ${description}`);
     } catch (error) {
-      logger.error(`[SafeAction] Click failed on: ${description}`, { error: String(error) });
+      logger.error(`[SafeAction] Click failed on: ${description}`, error);
       throw error;
     }
-
-    // await this.waitUntilStable();
-    // await locator.scrollIntoViewIfNeeded();
-    // await expect(locator).toBeVisible();
-    // await expect(locator).toBeEnabled();
-    // await locator.click();
-    // await this.waitUntilStable();
   }
 
   async safeFill(locator: Locator, value: string, description = 'Input field'): Promise<void> {
@@ -76,15 +72,9 @@ export abstract class BasePage {
       await this.waitUntilStable();
       logger.success(`[SafeAction] Filled: ${description}`);
     } catch (error) {
-      logger.error(`[SafeAction] Fill failed on: ${description}`, { error: String(error) });
+      logger.error(`[SafeAction] Fill failed on: ${description}`, error);
       throw error;
     }
-
-    // await this.waitUntilStable();
-    // await locator.scrollIntoViewIfNeeded();
-    // await expect(locator).toBeVisible();
-    // await locator.fill(value);
-    // await this.waitUntilStable();
   }
 
   async verifyUrl(url: RegExp | string): Promise<void> {
@@ -93,46 +83,46 @@ export abstract class BasePage {
     logger.success(`[Assertion] URL verified: ${String(url)}`);
   }
 
-  
   async fillIfEmpty(locator: Locator, value: string, description = 'Input field'): Promise<void> {
-    await this.waitUntilStable();
-    const currentValue = (await locator.inputValue()).trim();
+    try {
+      await this.waitUntilStable();
+      const currentValue = (await locator.inputValue()).trim();
 
-    if (currentValue !== '') {
-      logger.debug(`[SafeAction] ${description} already contains value, skipping fill.`);
-      return;
+      if (currentValue !== '') {
+        logger.debug(`[SafeAction] ${description} already contains a value; skipping fill.`);
+        return;
+      }
+
+      logger.info(`[SafeAction] ${description} is empty; filling it.`);
+      await locator.fill(value);
+      await this.waitUntilStable();
+      logger.success(`[SafeAction] Filled empty ${description}.`);
+    } catch (error) {
+      logger.error(`[SafeAction] Fill-if-empty failed on: ${description}`, error);
+      throw error;
     }
-
-    logger.info(`[SafeAction] ${description} is empty, filling value...`);
-    await locator.fill(value);
-    await this.waitUntilStable();
   }
 
   async safeClickCartable(locator: Locator, description = 'Cartable item'): Promise<void> {
     logger.info(`[SafeAction] Cartable click on: ${description}`);
 
-    // await this.waitUntilStable();
-    // await expect(locator).toBeAttached({ timeout: 15000 });
-    // await expect(locator).toBeVisible({ timeout: 15000 });
-    // await expect(locator).toBeEnabled({ timeout: 15000 });
-
     try {
       await this.waitUntilStable();
-      await expect(locator).toBeAttached({ timeout: 15000 });
-      await expect(locator).toBeVisible({ timeout: 15000 });
-      await expect(locator).toBeEnabled({ timeout: 15000 });
-      try {
-      await locator.scrollIntoViewIfNeeded({ timeout: 5000 });
-    } catch {
-      logger.warn(`[SafeAction] Scroll container bypass for: ${description}`);
-    }
+      await expect(locator).toBeAttached({ timeout: CARTABLE_CLICK_TIMEOUT });
+      await expect(locator).toBeVisible({ timeout: CARTABLE_CLICK_TIMEOUT });
+      await expect(locator).toBeEnabled({ timeout: CARTABLE_CLICK_TIMEOUT });
 
-    await locator.click({ timeout: 15000 });
-    await this.waitUntilStable();
-    logger.success(`[SafeAction] Cartable clicked: ${description}`);
-    } 
-    catch (error) {
-      logger.error(`[SafeAction] Cartable click failed on: ${description}`, { error: String(error) });
+      try {
+        await locator.scrollIntoViewIfNeeded({ timeout: CARTABLE_SCROLL_TIMEOUT });
+      } catch (error) {
+        logger.warn(`[SafeAction] Scroll container bypass for: ${description}`, { error });
+      }
+
+      await locator.click({ timeout: CARTABLE_CLICK_TIMEOUT });
+      await this.waitUntilStable();
+      logger.success(`[SafeAction] Cartable clicked: ${description}`);
+    } catch (error) {
+      logger.error(`[SafeAction] Cartable click failed on: ${description}`, error);
       throw error;
     }
   }

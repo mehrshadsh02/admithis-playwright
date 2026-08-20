@@ -2,7 +2,11 @@ import { Logger } from './Logger';
 
 export {
   DEFAULT_LOG_RETENTION_DAYS,
+  getPlaywrightArtifactSettings,
   getLoggerConfig,
+  parseLogMode,
+  parseLogActions,
+  parseLogApi,
   parseLogEnabled,
   parseLogLevel,
   parseLogOutput,
@@ -14,9 +18,11 @@ export { REDACTED, sanitizeForLog, serializeForLog } from './sanitize';
 export type {
   LogContext,
   LogLevel,
+  LogMode,
   LogOutput,
   LoggerConfig,
   LoggerOptions,
+  PlaywrightArtifactSettings,
   LoggerSink,
   StructuredLogEntry,
   StructuredLogSink,

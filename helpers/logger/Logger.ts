@@ -99,34 +99,56 @@ export class Logger {
     });
   }
 
+  isActionLoggingEnabled(): boolean {
+    return this.config.actions;
+  }
+
+  isApiLoggingEnabled(): boolean {
+    return this.config.api;
+  }
+
+  isDetailedLoggingEnabled(): boolean {
+    return (
+      this.config.mode === 'DEBUG' || this.config.mode === 'FULL' || this.config.level === 'DEBUG'
+    );
+  }
+
   log(level: LogLevel, message: string, context: LogContext = {}): void {
     if (!this.shouldLog(level)) {
       return;
     }
 
-    const timestamp = this.now();
-    const sanitizedMessage = String(sanitizeForLog(message));
+    try {
+      const timestamp = this.now();
+      const sanitizedMessage = String(sanitizeForLog(message));
 
-    if (this.config.output === 'console' || this.config.output === 'both') {
-      this.sink.write(level, this.format(level, sanitizedMessage, context, timestamp));
-    }
+      if (this.config.output === 'console' || this.config.output === 'both') {
+        this.writeConsole(level, this.format(level, sanitizedMessage, context, timestamp));
+      }
 
-    if (this.config.output === 'file' || this.config.output === 'both') {
-      this.writeStructured({
-        timestamp: timestamp.toISOString(),
-        level,
-        message: sanitizedMessage,
-        testName: this.sanitizeText(context.testName),
-        step: this.sanitizeText(context.step),
-        project: this.sanitizeText(context.project),
-        browser: this.sanitizeText(context.browser),
-        module: this.sanitizeText(context.module),
-        worker: context.worker,
-        retry: context.retry,
-        durationMs: context.durationMs,
-        error: sanitizeForLog(context.error),
-        metadata: sanitizeForLog(context.metadata),
-      });
+      if (this.config.output === 'file' || this.config.output === 'both') {
+        this.writeStructured({
+          timestamp: timestamp.toISOString(),
+          level,
+          message: sanitizedMessage,
+          testName: this.sanitizeText(context.testName),
+          testFile: this.sanitizeText(context.testFile),
+          testId: this.sanitizeText(context.testId),
+          step: this.sanitizeText(context.step),
+          project: this.sanitizeText(context.project),
+          browser: this.sanitizeText(context.browser),
+          module: this.sanitizeText(context.module),
+          action: this.sanitizeText(context.action),
+          target: this.sanitizeText(context.target),
+          worker: context.worker,
+          retry: context.retry,
+          durationMs: context.durationMs,
+          error: sanitizeForLog(context.error),
+          metadata: sanitizeForLog(context.metadata),
+        });
+      }
+    } catch (error) {
+      this.writeFallback('log operation failed', error);
     }
   }
 
@@ -134,12 +156,7 @@ export class Logger {
     return this.config.enabled && levelPriority[level] >= levelPriority[this.config.level];
   }
 
-  private format(
-    level: LogLevel,
-    message: string,
-    context: LogContext,
-    timestamp: Date,
-  ): string {
+  private format(level: LogLevel, message: string, context: LogContext, timestamp: Date): string {
     const segments = [
       this.formatTimestamp(timestamp),
       `[${level}]`,
@@ -170,7 +187,19 @@ export class Logger {
         ? `${context.project} / ${context.browser}`
         : context.project;
 
-    return [project, context.module, context.testName, execution, context.step]
+    const action =
+      context.action || context.target
+        ? `action=${context.action ?? 'unknown'}${context.target ? ` target=${context.target}` : ''}`
+        : undefined;
+
+    return [
+      project,
+      context.module,
+      context.testName,
+      execution,
+      context.step,
+      action,
+    ]
       .filter((segment): segment is string => Boolean(segment?.trim()))
       .map((segment) => `[${sanitizeForLog(segment)}]`);
   }
@@ -195,7 +224,25 @@ export class Logger {
     try {
       this.structuredSink?.write(entry);
     } catch (error) {
-      console.error(`[ERROR] [Logger] Structured output failed | error=${serializeForLog(error)}`);
+      this.writeFallback('structured output failed', error);
+    }
+  }
+
+  private writeConsole(level: LogLevel, line: string): void {
+    try {
+      this.sink.write(level, line);
+    } catch (error) {
+      this.writeFallback('console output failed', error);
+    }
+  }
+
+  private writeFallback(message: string, error: unknown): void {
+    try {
+      process.stderr.write(
+        `[Logger] ${message} | error=${serializeForLog(error)}\n`,
+      );
+    } catch {
+      // Logging must never affect the test process.
     }
   }
 
@@ -209,10 +256,14 @@ function isLogContext(value: unknown): value is LogContext {
     value &&
     typeof value === 'object' &&
     ('testName' in value ||
+      'testFile' in value ||
+      'testId' in value ||
       'project' in value ||
       'browser' in value ||
       'module' in value ||
       'step' in value ||
+      'action' in value ||
+      'target' in value ||
       'worker' in value ||
       'retry' in value ||
       'durationMs' in value ||

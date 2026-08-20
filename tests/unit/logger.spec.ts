@@ -4,10 +4,14 @@ import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import {
   JsonFileLogSink,
+  getPlaywrightArtifactSettings,
   getLoggerConfig,
   Logger,
+  parseLogActions,
+  parseLogApi,
   parseLogEnabled,
   parseLogLevel,
+  parseLogMode,
   parseLogOutput,
   parseLogRetentionDays,
   sanitizeForLog,
@@ -106,6 +110,51 @@ test('logger redacts sensitive metadata and error messages', () => {
   expect(sink.lines[0]).toContain('Authorization=[REDACTED]');
   expect(sink.lines[0]).not.toContain('secret-token');
   expect(sink.lines[0]).not.toContain('session-cookie');
+});
+
+test('logger redacts secrets embedded in URLs and headers', () => {
+  const sink = new MemorySink();
+  const logger = new Logger({
+    config: { enabled: true, level: 'DEBUG' },
+    sink,
+    now: () => fixedDate,
+  });
+
+  logger.error(
+    'Request failed https://example.test/api?token=hidden-token&safe=1',
+    {
+      metadata: {
+        headers: {
+          Authorization: 'Bearer hidden-header-token',
+          Cookie: 'session=hidden-cookie',
+        },
+      },
+    },
+  );
+
+  expect(sink.lines[0]).not.toContain('hidden-token');
+  expect(sink.lines[0]).not.toContain('hidden-header-token');
+  expect(sink.lines[0]).not.toContain('hidden-cookie');
+  expect(sink.lines[0]).toContain('token=[REDACTED]');
+  expect(sink.lines[0]).toContain('"Authorization":"[REDACTED]"');
+});
+
+test('logger output failures never escape the logging boundary', () => {
+  const logger = new Logger({
+    config: { enabled: true, level: 'DEBUG', output: 'both' },
+    sink: {
+      write: () => {
+        throw new Error('console sink unavailable');
+      },
+    },
+    structuredSink: {
+      write: () => {
+        throw new Error('file sink unavailable');
+      },
+    },
+  });
+
+  expect(() => logger.info('still safe')).not.toThrow();
 });
 
 test('logger writes structured JSON output to a dated file', () => {
@@ -221,8 +270,13 @@ test('sanitizeForLog handles circular metadata safely', () => {
 });
 
 test('logger configuration uses safe defaults and environment overrides', () => {
+  expect(parseLogMode(undefined)).toBeUndefined();
+  expect(parseLogMode('normal')).toBe('NORMAL');
+  expect(parseLogMode('invalid')).toBeUndefined();
   expect(parseLogEnabled(undefined)).toBe(true);
   expect(parseLogEnabled('false')).toBe(false);
+  expect(parseLogActions(undefined)).toBe(true);
+  expect(parseLogApi('off')).toBe(false);
   expect(parseLogLevel(undefined)).toBe('INFO');
   expect(parseLogLevel('debug')).toBe('DEBUG');
   expect(parseLogLevel('invalid')).toBe('INFO');
@@ -238,11 +292,83 @@ test('logger configuration uses safe defaults and environment overrides', () => 
       LOG_LEVEL: 'ERROR',
       LOG_OUTPUT: 'both',
       LOG_RETENTION_DAYS: '14',
+      LOG_ACTIONS: '0',
+      LOG_API: 'false',
     }),
   ).toEqual({
+    mode: 'OFF',
     enabled: false,
     level: 'ERROR',
     output: 'both',
     retentionDays: 14,
+    actions: false,
+    api: false,
+  });
+});
+
+test('logger configuration supports every logging mode', () => {
+  expect(getLoggerConfig({ LOG_MODE: 'OFF' })).toMatchObject({
+    mode: 'OFF',
+    enabled: false,
+    level: 'INFO',
+  });
+  expect(getLoggerConfig({ LOG_MODE: 'NORMAL' })).toMatchObject({
+    mode: 'NORMAL',
+    enabled: true,
+    level: 'INFO',
+  });
+  expect(getLoggerConfig({ LOG_MODE: 'DEBUG' })).toMatchObject({
+    mode: 'DEBUG',
+    enabled: true,
+    level: 'DEBUG',
+  });
+  expect(getLoggerConfig({ LOG_MODE: 'FAILURE' })).toMatchObject({
+    mode: 'FAILURE',
+    enabled: true,
+    level: 'INFO',
+  });
+  expect(getLoggerConfig({ LOG_MODE: 'FULL' })).toMatchObject({
+    mode: 'FULL',
+    enabled: true,
+    level: 'DEBUG',
+  });
+});
+
+test('logger configuration derives safe modes from existing variables', () => {
+  expect(getLoggerConfig({ LOG_ENABLED: 'false' }).mode).toBe('OFF');
+  expect(getLoggerConfig({ LOG_LEVEL: 'DEBUG' }).mode).toBe('DEBUG');
+  expect(getLoggerConfig({ LOG_LEVEL: 'INFO' }).mode).toBe('NORMAL');
+  expect(getLoggerConfig({ LOG_MODE: 'invalid', LOG_LEVEL: 'DEBUG' })).toMatchObject({
+    mode: 'DEBUG',
+    level: 'DEBUG',
+  });
+});
+
+test('artifact settings are enabled only for failure and full modes', () => {
+  const current = {
+    trace: 'off' as const,
+    screenshot: 'off' as const,
+    video: 'off' as const,
+  };
+
+  expect(getPlaywrightArtifactSettings('OFF', current)).toEqual(current);
+  expect(getPlaywrightArtifactSettings('NORMAL', current)).toEqual(current);
+  expect(getPlaywrightArtifactSettings('DEBUG', current)).toEqual(current);
+  expect(getPlaywrightArtifactSettings('FAILURE', current)).toEqual({
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  });
+  expect(getPlaywrightArtifactSettings('FULL', current)).toEqual({
+    trace: 'on',
+    screenshot: 'on',
+    video: 'on',
+  });
+});
+
+test('disabled logging takes precedence over a requested diagnostic mode', () => {
+  expect(getLoggerConfig({ LOG_ENABLED: 'false', LOG_MODE: 'FULL' })).toMatchObject({
+    mode: 'OFF',
+    enabled: false,
   });
 });

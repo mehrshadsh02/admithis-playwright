@@ -243,6 +243,42 @@ Next step:
 - Ready to start Phase 4, SafeActions and WaitEngine logging integration, after requested
   validation passes and the user explicitly asks to proceed.
 
+## 2026-08-19 — Phase 4 BasePage Integration
+
+Task:
+
+- Complete the requested Phase 4 SafeActions and WaitEngine work around `pages/BasePage.ts`.
+
+Documentation-first changes:
+
+- Recorded the final Phase 4 contracts in `docs/ARCHITECTURE.md` and `README.md`.
+- Replaced the older Phase 4 TODO wording with the requested staged checklist.
+
+Implemented:
+
+- `waitForPageReady` waits for `domcontentloaded` and spinner stability.
+- `waitUntilStable` uses a configurable timeout, logs hidden/missing/failed spinner outcomes,
+  and continues when the spinner is absent, detached, or times out.
+- `safeClick`, `safeFill`, `safeClickCartable`, and `fillIfEmpty` now have contextual success and
+  failure logging while preserving the existing API.
+- Fill values and current field contents are never logged; error objects flow through central
+  logger sanitization.
+
+Verification:
+
+- `npx tsc --noEmit`: passed from Windows PowerShell.
+- `npm run lint`: passed from Windows PowerShell.
+- Focused Prettier check for `BasePage.ts`, `ARCHITECTURE.md`, `TODO.md`, and `README.md`: passed.
+- `npx playwright test tests/unit/logger.spec.ts tests/unit/playwright-logger-reporter.spec.ts
+--project=chrome`: passed (9 tests), confirming centralized redaction and reporter behavior.
+- `npx playwright test tests/smoke/open-admit.spec.ts --project=chrome`: blocked by
+  `net::ERR_CONNECTION_TIMED_OUT` reaching `http://192.168.5.19:8019/filing`.
+
+Status:
+
+- Phase 4 remains in progress until the focused Playwright test can run against the internal
+  AdmitHis environment.
+
 ## 2026-07-26
 
 Task:

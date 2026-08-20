@@ -41,3 +41,20 @@ npx playwright test tests/smoke/open-admit.spec.ts --project=chrome
 ```
 
 Run targeted migrated specs when the internal AdmitHis/Cash environment and test data are ready.
+
+## Phase 4: SafeActions and WaitEngine
+
+`BasePage` is the shared integration point for spinner-aware waits and safe UI actions. The
+Phase 4 contract is:
+
+- `waitForPageReady` waits for `domcontentloaded` and hidden `.back-spenner`.
+- `waitUntilStable(timeout)` uses a caller-configurable timeout and treats a missing, detached,
+  or timed-out spinner as a logged non-fatal wait result.
+- `safeClick` and `safeFill` perform stable-page waits, scrolling, state checks, the action, and
+  a post-action wait while logging contextual success/failure without sensitive values.
+- `safeClickCartable` checks attached/visible/enabled state, tolerates scroll-container errors,
+  and uses its own click timeout.
+- `fillIfEmpty` reads the current value and fills only when empty; values are never logged.
+
+The centralized logger remains responsible for redaction. Callers should provide descriptions
+such as “National code field” rather than patient identifiers or credentials.

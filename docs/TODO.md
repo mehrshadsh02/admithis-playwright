@@ -14,11 +14,14 @@
 - [x] Phase 1: Popup and Dialog Management (`page.addInitScript`)
 - [x] Phase 2: Core Logger Infrastructure (`helpers/logger/`)
 - [x] Phase 3: Custom Reporter & NDJSON Sinks
-- [/] Phase 4: Integrate Logger into `BasePage` (SafeActions & WaitEngine)
-  - [x] Document Phase 4 Architecture & Contracts
-  - [ ] Refactor `BasePage.ts` with contextual logging
-  - [ ] Type check and lint validation
-- [ ] Phase 5: Page Objects Refactor (`AdmissionPage`, `CashPage`, `CartablePage`)    
+- [/] Phase 4: SafeActions & WaitEngine Integration
+  - [x] Define logging and wait contracts
+  - [x] Document BasePage integration requirements
+  - [x] Integrate central logger into BasePage
+  - [x] Add contextual descriptions to SafeActions
+  - [x] Validate TypeScript and lint
+  - [ ] Run focused Playwright test
+- [ ] Phase 5: Page Objects Refactor (`AdmissionPage`, `CashPage`, `CartablePage`)
 
 ## Active Inpatient Plan
 
@@ -66,5 +69,8 @@
 - Updated token works; current admission failure is now patient data state, not authentication.
 - Patient `1520554001` is already hospitalized, so the app shows an alert after save and no print-deny modal appears.
 - Validation commands cannot start in the current shell because npm resolves to Windows Node under WSL 1: `WSL 1 is not supported. Please upgrade to WSL 2 or above. Could not determine Node.js install directory`.
+- On August 19, 2026, the focused smoke test started from Windows PowerShell but could not
+  reach `http://192.168.5.19:8019/filing`; Playwright reported
+  `net::ERR_CONNECTION_TIMED_OUT`.
 - Repository-wide Prettier validation still reports 31 pre-existing files outside Phase 2; the
   focused Phase 2 formatter check passes.
