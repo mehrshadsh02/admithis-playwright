@@ -3,6 +3,43 @@ import { type Locator, type Page } from '@playwright/test';
 export class AdmissionLocator {
   constructor(private readonly page: Page) {}
 
+  get lastName(): Locator {
+    return this.page.locator('input[formcontrolname="lastName"]');
+  }
+
+  get firstName(): Locator {
+    return this.page.locator('input[formcontrolname="firstName"]');
+  }
+
+  get fatherName(): Locator {
+    return this.page.locator('input[formcontrolname="fatherName"]');
+  }
+
+  get sexuality(): Locator {
+    return this.page.locator('input[formcontrolname="sexuality"]');
+  }
+
+  get birthDate(): Locator {
+    return this.page.locator('input[formcontrolname="birthDate"]');
+  }  
+
+  get insuranceName(): Locator {
+    return this.page.locator('input[formcontrolname="insuranceName"]');
+  }  
+
+  get insuranceFund(): Locator {
+    return this.page.locator('input[formcontrolname="insuranceFund"]');
+  }  
+
+  get insuranceNumber(): Locator {
+    return this.page.locator('input[formcontrolname="insuranceNo"]');
+  }  
+
+  get insuranceExpirationDate(): Locator {
+    return this.page.locator('input[formcontrolname="insuranceExpDate"]');
+  }  
+
+
   get nationality(): Locator {
     return this.page.locator('.nationality-select > .ng-select-container > .ng-arrow-wrapper');
   }

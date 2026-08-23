@@ -2,38 +2,9 @@ import { expect, type Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { AdmissionLocator } from '../locators/AdmissionLocator';
 import { NgSelect } from '../components/NgSelect';
-import type { Patient } from '../data/models/Patient';
+// import type { Patient } from '../data/models/Patient';
+import type {PatientInformationInput ,AdmissionAssignmentInput,} from '../data/models/PatientAdmission.types';
 
-type patientInformationInput = Pick<
-  Patient,
-  | 'maritalStatus'
-  | 'insuranceRelation'
-  | 'mobile'
-  | 'address'
-  | 'ShabaNo'
-  | 'BankAcountName'
-  | 'accompanyName'
-  | 'accompanyRelation'
-  | 'accompanyMobile'
-  | 'firstRecognition'
-  | 'howToRefer'
-  | 'causeOfHospitalization'
-  | 'patientClass'
->;
-
-type AdmissionAssignmentInput = Pick<
-  Patient,
-  | 'nationalCode'
-  | 'insuranceName'
-  | 'ward'
-  | 'bed'
-  | 'doctor'
-  | 'responsiblePatient'
-  | 'prepayment'
-  | 'preadmitEditWard'
-  | 'emergencyEditDoctor'
-  | 'inpatientward'
->;
 
 export class AdmissionPage extends BasePage {
   private readonly locator = new AdmissionLocator(this.page);
@@ -116,10 +87,33 @@ export class AdmissionPage extends BasePage {
     await this.identityInquiry();
   }
 
-  async fillPatientInformation(patient: patientInformationInput): Promise<void> {
+  async fillPatientInformation(patient: PatientInformationInput): Promise<void> {
 
+    await this.fillIfEmpty(this.locator.firstName, patient.firstName);
+    await this.fillIfEmpty(this.locator.lastName, patient.lastName);
+    await this.fillIfEmpty(this.locator.fatherName, patient.fatherName);
+    await this.fillIfEmpty(this.locator.birthDate, patient.birthDate);
+
+    
     await this.ngSelect.selectIfEmptyByFormControl('maritalStatus',patient.maritalStatus);
     await this.waitUntilStable();
+    
+    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'شماره شبا' }), patient.ShabaNo);
+
+    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'صاحب شبا' }),patient.BankAcountName);
+
+
+    await this.ngSelect.selectIfEmptyByFormControl('sexuality',patient.sex);
+    await this.waitUntilStable();
+
+    await this.ngSelect.selectIfEmptyByFormControl('insuranceName',patient.insuranceName);
+    await this.waitUntilStable();
+    
+    await this.ngSelect.selectIfEmptyByFormControl('insuranceFund',patient.insuranceFund);
+    await this.waitUntilStable(); 
+    
+    await this.fillIfEmpty(this.locator.insuranceNumber, patient.insuranceNumber);
+    await this.fillIfEmpty(this.locator.insuranceExpirationDate, patient.insuranceExpirationDate);
 
     await this.ngSelect.selectIfEmptyByFormControl('insurRelation',patient.insuranceRelation);
     await this.waitUntilStable();
@@ -127,12 +121,8 @@ export class AdmissionPage extends BasePage {
     await this.fillIfEmpty(this.locator.mobileNumber, patient.mobile);
     await this.fillIfEmpty(this.locator.address, patient.address);
 
-    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'شماره شبا' }), patient.ShabaNo);
-
-    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'صاحب شبا' }),patient.BankAcountName);
-
     await this.locator.accompanyFullName.fill(patient.accompanyName);
-    await this.ngSelect.selectByFormControl('relation', patient.accompanyRelation);
+    await this.ngSelect.selectIfEmptyByFormControl('relation', patient.accompanyRelation);
     await this.waitUntilStable();
     await this.locator.accompanyMobileNumber.fill(patient.accompanyMobile);
 
@@ -482,7 +472,7 @@ export class AdmissionPage extends BasePage {
     await this.locator.saveFileButton.click();
   }
 
-  async fillPatientInformationforInapatient(patient: patientInformationInput): Promise<void> {
+  async fillPatientInformationforInapatient(patient: PatientInformationInput): Promise<void> {
 
     await this.ngSelect.selectIfEmptyByFormControl('maritalStatus',patient.maritalStatus);
     await this.waitUntilStable();
@@ -536,7 +526,7 @@ export class AdmissionPage extends BasePage {
     await this.waitForPageReady();
   }
 
-  async editInpatientInsur(patient: AdmissionAssignmentInput): Promise<void> {
+  async editInpatientInsur(patient: PatientInformationInput): Promise<void> {
     await this.openInpatientAdmitForEdit(patient.nationalCode);
     
     await this.ngSelect.selectByFormControl('insuranceName', patient.insuranceName);

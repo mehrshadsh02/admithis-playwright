@@ -83,25 +83,64 @@ export abstract class BasePage {
     logger.success(`[Assertion] URL verified: ${String(url)}`);
   }
 
-  async fillIfEmpty(locator: Locator, value: string, description = 'Input field'): Promise<void> {
+  // async fillIfEmpty(locator: Locator, value: string, description = 'Input field'): Promise<void> {
+  //   try {
+  //     await this.waitUntilStable();
+  //     const currentValue = (await locator.inputValue()).trim();
+
+  //     if (currentValue !== '') {
+  //       logger.debug(`[SafeAction] ${description} already contains a value; skipping fill.`);
+  //       return;
+  //     }
+
+  //     logger.info(`[SafeAction] ${description} is empty; filling it.`);
+  //     await locator.fill(value);
+  //     await this.waitUntilStable();
+  //     logger.success(`[SafeAction] Filled empty ${description}.`);
+  //   } catch (error) {
+  //     logger.error(`[SafeAction] Fill-if-empty failed on: ${description}`, error);
+  //     throw error;
+  //   }
+  // }
+
+  async fillIfEmpty(locator: Locator,value: string,description = 'Input field',): Promise<void> {
     try {
       await this.waitUntilStable();
+
       const currentValue = (await locator.inputValue()).trim();
 
       if (currentValue !== '') {
-        logger.debug(`[SafeAction] ${description} already contains a value; skipping fill.`);
+        logger.debug(
+          `[SafeAction] ${description} already contains a value; skipping fill.`,
+        );
         return;
       }
 
-      logger.info(`[SafeAction] ${description} is empty; filling it.`);
+      logger.info(
+        `[SafeAction] ${description} is empty; filling it.`,
+      );
+
       await locator.fill(value);
+
+      await expect(locator).toHaveValue(value, {
+        timeout: 30_000,
+      });
+
       await this.waitUntilStable();
-      logger.success(`[SafeAction] Filled empty ${description}.`);
+
+      logger.success(
+        `[SafeAction] Filled empty ${description} successfully.`,
+      );
     } catch (error) {
-      logger.error(`[SafeAction] Fill-if-empty failed on: ${description}`, error);
+      logger.error(
+        `[SafeAction] Fill-if-empty failed on: ${description}`,
+        error,
+      );
+
       throw error;
     }
   }
+
 
   async safeClickCartable(locator: Locator, description = 'Cartable item'): Promise<void> {
     logger.info(`[SafeAction] Cartable click on: ${description}`);
