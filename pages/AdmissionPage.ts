@@ -2,7 +2,8 @@ import { expect, type Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { AdmissionLocator } from '../locators/AdmissionLocator';
 import { NgSelect } from '../components/NgSelect';
-// import type { Patient } from '../data/models/Patient';
+import { logger } from '../helpers/logger';
+import type { Patient } from '../data/models/Patient';
 import type {PatientInformationInput ,AdmissionAssignmentInput,} from '../data/models/PatientAdmission.types';
 
 
@@ -22,7 +23,12 @@ export class AdmissionPage extends BasePage {
   }
 
   async selectIranianNationality(): Promise<void> {
+    if ((await this.locator.nationalityValue.textContent())?.trim() === 'ایرانی') {
+      return;
+    }
+
     await this.locator.nationality.click();
+    await expect(this.locator.iranianOption).toBeVisible();
     await this.locator.iranianOption.click();
   }
 
@@ -77,14 +83,152 @@ export class AdmissionPage extends BasePage {
     await this.waitUntilStable();
   }
 
-  async searchPatient(nationalCode: string): Promise<void> {
+  async searchByNationalCode(nationalCode: string): Promise<void> {
     await this.selectIranianNationality();
-
     await this.enterNationalCode(nationalCode);
-
     await this.verifyIdentityInquiryEnabled();
-
     await this.identityInquiry();
+    await this.waitForPatientFieldsReady();
+  }
+
+  async searchByNationalCodeAndBirthDate(
+    nationalCode: string,
+    birthDate: string,
+  ): Promise<void> {
+    await this.selectIranianNationality();
+    await this.enterNationalCode(nationalCode);
+    await this.locator.birthDate.fill(birthDate);
+    await expect(this.locator.identityInquiryByBirthDateButton).toBeEnabled();
+    await this.locator.identityInquiryByBirthDateButton.click();
+    await this.waitForPatientFieldsReady();
+  }
+
+  async searchByElectronicNumber(electronicNumber: string): Promise<void> {
+    await this.locator.electronicNumber.click();
+    await this.locator.electronicNumber.fill(electronicNumber);
+
+    await this.locator.searchButton.click();
+
+    await this.waitForPatientFieldsReady();
+  }
+
+  async searchByNameAndLastName(firstName: string, lastName: string): Promise<void> {
+    await this.locator.firstName.fill(firstName);
+    await this.locator.lastName.fill(lastName);
+    await this.locator.searchButton.click();
+    await this.waitForPatientFieldsReady();
+  }
+
+  async selectPatientFromResults(firstName: string, lastName: string): Promise<void> {
+    const result = this.locator.patientResultRows
+      .filter({ hasText: firstName })
+      .filter({ hasText: lastName })
+      .first();
+    await expect(result).toBeVisible();
+    await result.click();
+    await this.waitForPageReady();
+  }
+
+  async resetPatientForm(): Promise<void> {
+    await this.locator.refreshButton.click();
+
+    await expect(this.locator.nationalCode).toBeEditable({
+      timeout: 10000,
+    });
+
+    await this.waitForPatientFormReady();
+  }
+
+  private async waitForPatientFormReady(): Promise<void> {
+    await expect(this.locator.nationalCode).toBeVisible();
+    await expect(this.locator.firstName).toBeVisible();
+    await expect(this.locator.lastName).toBeVisible();
+  }
+
+  private async waitForPatientFieldsReady(): Promise<void> {
+    await this.waitUntilStable();
+    await this.waitForPatientFormReady();
+    await expect(this.locator.firstName).not.toHaveValue('');
+    await expect(this.locator.lastName).not.toHaveValue('');
+  }
+
+  private async isPatientLoaded(): Promise<boolean> {
+    try {
+      await expect(this.locator.firstName).toHaveValue(/.+/, {
+        timeout: 3000,
+      });
+
+      await expect(this.locator.lastName).toHaveValue(/.+/, {
+        timeout: 3000,
+      });
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async searchPatientWithStrategies(patient: Patient): Promise<void> {
+    // 1. کد ملی
+    await this.resetPatientForm();
+
+    await this.searchByNationalCode(patient.nationalCode);
+
+    if (await this.isPatientLoaded()) {
+      return;
+    }
+
+    // 2. کد ملی + تاریخ تولد
+    await this.resetPatientForm();
+
+    await this.searchByNationalCodeAndBirthDate(
+      patient.nationalCode,
+      patient.birthDate,
+    );
+
+    if (await this.isPatientLoaded()) {
+      return;
+    }
+
+    // 3. نام و نام خانوادگی
+    if (patient.firstName.trim() && patient.lastName.trim()) {
+      await this.resetPatientForm();
+
+      await this.searchByNameAndLastName(
+        patient.firstName,
+        patient.lastName,
+      );
+
+      await this.selectPatientFromResults(
+        patient.firstName,
+        patient.lastName,
+      );
+
+      if (await this.isPatientLoaded()) {
+        return;
+      }
+    }
+
+    // 4. شماره الکترونیک
+    if (patient.electronicNumber.trim()) {
+      await this.resetPatientForm();
+
+      await this.searchByElectronicNumber(
+        patient.electronicNumber,
+      );
+
+      if (await this.isPatientLoaded()) {
+        return;
+      }
+    }
+
+    throw new Error(
+      `Patient not found: ${patient.nationalCode}`,
+    );
+  }
+
+  async searchPatient(nationalCode: string): Promise<void> {
+    await this.searchByNationalCode(nationalCode);
   }
 
   async fillPatientInformation(patient: PatientInformationInput): Promise<void> {

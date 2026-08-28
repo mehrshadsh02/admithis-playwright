@@ -6,6 +6,7 @@ export const adultInpatient: Patient = {
   // =========================================================
 
   nationalCode: '3151025013',
+  electronicNumber: '',
   firstName: '',
   lastName: '',
   fatherName: '',
@@ -57,6 +58,7 @@ export const adultInpatient: Patient = {
   // =========================================================
 
   insuranceName: 'آزاد',
+  insuranceFund: '',
   insuranceRelation: 'خود فرد',
   insuranceId: '',
   insuranceNumber: '',

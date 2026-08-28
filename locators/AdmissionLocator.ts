@@ -23,6 +23,10 @@ export class AdmissionLocator {
     return this.page.locator('input[formcontrolname="birthDate"]');
   }  
 
+  get electronicNumber(): Locator {
+    return this.page.locator('input[formcontrolname="fileFormationNo"]');
+  }
+
   get insuranceName(): Locator {
     return this.page.locator('input[formcontrolname="insuranceName"]');
   }  
@@ -41,11 +45,15 @@ export class AdmissionLocator {
 
 
   get nationality(): Locator {
-    return this.page.locator('.nationality-select > .ng-select-container > .ng-arrow-wrapper');
+    return this.page.locator('ng-select[formcontrolname="nationality"]');
+  }
+
+  get nationalityValue(): Locator {
+    return this.page.locator('ng-select[formcontrolname="nationality"] .ng-value-label');
   }
 
   get iranianOption(): Locator {
-    return this.page.getByLabel('Options list').getByText('ایرانی', { exact: true });
+    return this.page.locator('ng-dropdown-panel .ng-option').filter({ hasText: 'ایرانی' });
   }
 
   get nationalCode(): Locator {
@@ -57,9 +65,21 @@ export class AdmissionLocator {
     return this.page.getByRole('button', { name: 'استحقاق درمان' });
   }
 
-  get searchButton(): Locator {
-    return this.page.locator('#button-addon3');
+  get identityInquiryByBirthDateButton(): Locator {
+    return this.page.getByRole('button', { name: 'استعلام هویت' });
   }
+
+  get searchButton(): Locator {
+    return this.page.locator('#button-addon4');
+  }
+
+  get patientResultRows(): Locator {
+    return this.page.locator('tr');
+  }
+
+  // get refreshPatientFormButton(): Locator {
+  //   return this.page.getByRole('button', { name: 'بارگذاری مجدد', exact: true });
+  // }
 
   get maritalStatus(): Locator {
     return this.page.locator('[formcontrolname="maritalStatus"] .ng-select-container');
@@ -185,6 +205,12 @@ export class AdmissionLocator {
 
   get EmergencyPatientListLink(): Locator {
     return this.page.locator("//img[@src='assets/icons/patients-monitored.svg']/ancestor::a");
+  }
+
+  get refreshButton(): Locator {
+    return this.page.locator('button').filter({
+      has: this.page.locator('mat-icon', { hasText: 'refresh' }),
+    });
   }
   
   

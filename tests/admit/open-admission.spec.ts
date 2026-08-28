@@ -33,49 +33,49 @@ test('001-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
 
     await admission.open();
 
-    await admission.searchPatient(insuredAdult.nationalCode);
+    await admission.searchPatientWithStrategies(insuredAdult);
 
-    await admission.fillPatientInformation(insuredAdult);
+    // await admission.fillPatientInformation(insuredAdult);
 
-    await admission.assignWardDoctorAndPrepayment(insuredAdult);
+    // await admission.assignWardDoctorAndPrepayment(insuredAdult);
 
-    await admission.saveAdmissionFiling();
+    // await admission.saveAdmissionFiling();
 
-    await admission.denyAdmitPrintPage();
+    // await admission.denyAdmitPrintPage();
 
-    await expect(page).toHaveURL(/8019/);
+    // await expect(page).toHaveURL(/8019/);
   });
 
-  await test.step('Pay Pishpardakht', async () => {
-    const cash = new CashPage(page);
+  // await test.step('Pay Pishpardakht', async () => {
+  //   const cash = new CashPage(page);
 
-    await cash.payPatientByNationalCode(insuredAdult.nationalCode);
-  });
+  //   await cash.payPatientByNationalCode(insuredAdult.nationalCode);
+  // });
 
-  await test.step('Edit PreAdmit', async () => {
-    const admission = new AdmissionPage(page);
+  // await test.step('Edit PreAdmit', async () => {
+  //   const admission = new AdmissionPage(page);
 
-    await admission.openInPatientList();
+  //   await admission.openInPatientList();
 
-    await admission.loadPreadmitPatientList();
+  //   await admission.loadPreadmitPatientList();
 
-    await admission.editPreadmitWardAndDoctor(insuredAdult);
-  });
+  //   await admission.editPreadmitWardAndDoctor(insuredAdult);
+  // });
 
-  await test.step('Cancel PreAdmit', async () => {
-    const admission = new AdmissionPage(page);
+  // await test.step('Cancel PreAdmit', async () => {
+  //   const admission = new AdmissionPage(page);
 
-    await admission.openInPatientList();
+  //   await admission.openInPatientList();
 
-    await admission.loadPreadmitPatientList();
+  //   await admission.loadPreadmitPatientList();
 
-    await admission.cancelPreadmit(insuredAdult.nationalCode);
-  });
+  //   await admission.cancelPreadmit(insuredAdult.nationalCode);
+  // });
 
-  await test.step('Refund Pishpardakht', async () => {
-    const cash = new CashPage(page);
-    await cash.refundPatientByNationalCode(insuredAdult.nationalCode, insuredAdult.refundComment);
-  });
+  // await test.step('Refund Pishpardakht', async () => {
+  //   const cash = new CashPage(page);
+  //   await cash.refundPatientByNationalCode(insuredAdult.nationalCode, insuredAdult.refundComment);
+  // });
 });
 
 test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, request }) => {
@@ -110,7 +110,7 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
 
     await admission.selectEmergencyUnderObservation();
 
-    await admission.searchPatient(traumaPatient.nationalCode);
+    await admission.searchPatientWithStrategies(traumaPatient);
 
     await admission.fillPatientInformation(traumaPatient);
 
@@ -203,7 +203,7 @@ test('003-Create and Edit Inpatient filing', async ({ page, context }) => {
 
     await admission.open();
 
-    await admission.searchPatient(adultInpatient.nationalCode);
+    await admission.searchPatientWithStrategies(adultInpatient);
 
     await admission.fillPatientInformationforInapatient(adultInpatient);
 

@@ -4,6 +4,7 @@ export interface Patient {
   // =========================================================
 
   nationalCode: string;
+  electronicNumber: string;
   firstName: string;
   lastName: string;
   fatherName: string;

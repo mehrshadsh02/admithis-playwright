@@ -6,6 +6,7 @@ export const traumaPatient: Patient = {
   // =========================================================
 
   nationalCode: '1671637801',
+  electronicNumber: '',
   firstName: '',
   lastName: '',
   fatherName: '',
@@ -57,6 +58,7 @@ export const traumaPatient: Patient = {
   // =========================================================
 
   insuranceName: '',
+  insuranceFund: '',
   insuranceRelation: 'خود فرد',
   insuranceId: '',
   insuranceNumber: '',
