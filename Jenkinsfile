@@ -28,9 +28,15 @@ pipeline {
         CI = 'true'
 
         /*
-         * Direct Playwright to the central shared cache location where browsers are stored.
+         * Direct Playwright to the central shared cache location.
+         * Playwright automatically looks for the 'ms-playwright' folder inside this path.
          */
-        PLAYWRIGHT_BROWSERS_PATH = 'C:\\Users\\OH\\AppData\\Local\\ms-playwright'
+        PLAYWRIGHT_BROWSERS_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\playwright-browsers'
+
+        /*
+         * Fast CDN Mirror to prevent 403 / network timeout issues if new revisions are checked
+         */
+        PLAYWRIGHT_DOWNLOAD_HOST = 'https://cdn.npmmirror.com/binaries/playwright'
 
         /*
          * Generate both HTML and JUnit XML reports for Jenkins
@@ -78,7 +84,7 @@ pipeline {
         stage('Install Playwright Browsers') {
             steps {
                 /*
-                 * If browsers exist in PLAYWRIGHT_BROWSERS_PATH, Playwright skips downloading.
+                 * Checks PLAYWRIGHT_BROWSERS_PATH. If matching revisions exist, it skips downloading.
                  */
                 bat '''
                     npx playwright install
@@ -115,14 +121,13 @@ pipeline {
             )
 
             /*
-             * Publish the Playwright HTML Report (equivalent to npx playwright show-report).
+             * Publish the Playwright HTML Report
              */
             publishHTML(
                 target: [
                     allowMissing: true,
                     alwaysLinkToLastBuild: true,
                     keepAll: true,
-                    includeInBuildSummary: true,
                     reportDir: 'playwright-report',
                     reportFiles: 'index.html',
                     reportName: 'Playwright HTML Report',
@@ -141,7 +146,7 @@ pipeline {
         }
 
         success {
-            echo 'Playwright TypeScript Pipeline completed successfully.'
+            echo 'Playwright Pipeline completed successfully.'
         }
 
         unstable {
