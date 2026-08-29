@@ -170,13 +170,13 @@ export class AdmissionPage extends BasePage {
 
   async searchPatientWithStrategies(patient: Patient): Promise<void> {
     // 1. کد ملی
-    await this.resetPatientForm();
+    // await this.resetPatientForm();
 
     await this.searchByNationalCode(patient.nationalCode);
 
-    if (await this.isPatientLoaded()) {
-      return;
-    }
+    // if (await this.isPatientLoaded()) {
+    //   return;
+    // }
 
     // 2. کد ملی + تاریخ تولد
     await this.resetPatientForm();

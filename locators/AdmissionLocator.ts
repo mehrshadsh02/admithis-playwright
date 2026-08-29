@@ -208,9 +208,14 @@ export class AdmissionLocator {
   }
 
   get refreshButton(): Locator {
-    return this.page.locator('button').filter({
-      has: this.page.locator('mat-icon', { hasText: 'refresh' }),
-    });
+    return this.page
+      .getByRole('button')
+      .filter({
+        has: this.page
+          .locator('mat-icon')
+          .filter({ hasText: /^refresh$/ }),
+      })
+      .first();
   }
   
   
