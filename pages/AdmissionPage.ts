@@ -119,14 +119,56 @@ export class AdmissionPage extends BasePage {
     await this.waitForPatientFieldsReady();
   }
 
-  async selectPatientFromResults(firstName: string, lastName: string): Promise<void> {
-    const result = this.locator.patientResultRows
-      .filter({ hasText: firstName })
-      .filter({ hasText: lastName })
-      .first();
-    await expect(result).toBeVisible();
-    await result.click();
+  async selectPatientFromResults(firstName: string,lastName: string,fatherName: string,nationalCode?: string): Promise<void> {
+    // تابع کمکی برای ایجاد Regex منعطف جهت تطابق ی/ي و ک/ك و فاصله‌های اضافی
+    const createFlexibleRegex = (text: string): RegExp => {
+      const sanitized = text.trim()
+        .replace(/[یي]/g, '[یي]')
+        .replace(/[کك]/g, '[کك]');
+      return new RegExp(`^\\s*${sanitized}\\s*$`, 'i');
+    };
+
+    let targetRow = this.locator.patientResultRows
+      // بررسی دقیق ستون FirstName
+      .filter({
+        has: this.page.locator('td.mat-column-FirstName', {
+          hasText: createFlexibleRegex(firstName),
+        }),
+      })
+      // بررسی دقیق ستون LastName
+      .filter({
+        has: this.page.locator('td.mat-column-LastName', {
+          hasText: createFlexibleRegex(lastName),
+        }),
+      })
+      // بررسی دقیق ستون FatherName
+      .filter({
+        has: this.page.locator('td.mat-column-FatherName', {
+          hasText: createFlexibleRegex(fatherName),
+        }),
+      });
+
+    // اگر کدملی هم پاس داده شده بود و خواستی ردیف یکتا‌تر شود:
+    if (nationalCode) {
+      targetRow = targetRow.filter({
+        has: this.page.locator('td.mat-column-NCode', {
+          hasText: nationalCode.trim(),
+        }),
+      });
+    }
+
+    // انتخاب اولین ردیف مطابق با شرایط
+    const selectedRow = targetRow.first();
+
+    // اطمینان از Visible و پایدار بودن ردیف
+    await expect(selectedRow, `ردیف مربوط به بیمار ${firstName} ${lastName} پیدا نشد`).toBeVisible();
+    
+    // کلیک روی ردیف جهت انتخاب
+    await selectedRow.click();
+
+    // انتظار برای اتمام انیمیشن‌ها یا درخواست‌های انگولار
     await this.waitForPageReady();
+    await this.waitForPatientFieldsReady();
   }
 
   async resetPatientForm(): Promise<void> {
@@ -186,9 +228,9 @@ export class AdmissionPage extends BasePage {
       patient.birthDate,
     );
 
-    if (await this.isPatientLoaded()) {
-      return;
-    }
+    // if (await this.isPatientLoaded()) {
+    //   return;
+    // }
 
     // 3. نام و نام خانوادگی
     if (patient.firstName.trim() && patient.lastName.trim()) {
@@ -202,11 +244,13 @@ export class AdmissionPage extends BasePage {
       await this.selectPatientFromResults(
         patient.firstName,
         patient.lastName,
+        patient.fatherName,
+        patient.nationalCode,
       );
 
-      if (await this.isPatientLoaded()) {
-        return;
-      }
+      // if (await this.isPatientLoaded()) {
+      //   return;
+      // }
     }
 
     // 4. شماره الکترونیک

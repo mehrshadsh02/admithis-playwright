@@ -74,7 +74,7 @@ export class AdmissionLocator {
   }
 
   get patientResultRows(): Locator {
-    return this.page.locator('tr');
+    return this.page.locator('tbody[role="rowgroup"] tr[mat-row], tr.mat-row');
   }
 
   // get refreshPatientFormButton(): Locator {
