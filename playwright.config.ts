@@ -60,6 +60,21 @@ export default defineConfig({
   reporter: [
     ['./helpers/logger/PlaywrightLoggerReporter.ts'],
     ['html', { open: 'never' }],
+    [
+      'allure-playwright',
+      {
+        resultsDir: 'allure-results',
+        detail: true,
+        suiteTitle: true,
+      },
+    ],
+    [
+      'monocart-reporter',
+      {
+        name: 'HIS Automation Report',
+        outputFile: 'monocart-report/index.html',
+      },
+    ],
   ],
 
   use: {

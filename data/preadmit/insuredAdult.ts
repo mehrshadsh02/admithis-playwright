@@ -6,6 +6,7 @@ export const insuredAdult: Patient = {
   // =========================================================
 
   nationalCode: '1520554001',
+  electronicNumber: '683676',
   firstName: 'مهرشاد',
   lastName: 'شیخ الاسلامی',
   fatherName: 'مهرداد',

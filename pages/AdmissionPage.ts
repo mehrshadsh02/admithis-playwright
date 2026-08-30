@@ -1,9 +1,13 @@
+import { test } from '@playwright/test';
 import { expect, type Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { AdmissionLocator } from '../locators/AdmissionLocator';
 import { NgSelect } from '../components/NgSelect';
-// import type { Patient } from '../data/models/Patient';
+// import { logger } from '../helpers/logger';
+import type { Patient } from '../data/models/Patient';
 import type {PatientInformationInput ,AdmissionAssignmentInput,} from '../data/models/PatientAdmission.types';
+// import { Console } from 'console';
+import { console } from 'inspector';
 
 
 export class AdmissionPage extends BasePage {
@@ -22,7 +26,12 @@ export class AdmissionPage extends BasePage {
   }
 
   async selectIranianNationality(): Promise<void> {
+    if ((await this.locator.nationalityValue.textContent())?.trim() === 'ایرانی') {
+      return;
+    }
+
     await this.locator.nationality.click();
+    await expect(this.locator.iranianOption).toBeVisible();
     await this.locator.iranianOption.click();
   }
 
@@ -77,14 +86,119 @@ export class AdmissionPage extends BasePage {
     await this.waitUntilStable();
   }
 
-  async searchPatient(nationalCode: string): Promise<void> {
+  async searchByNationalCode(nationalCode: string): Promise<void> {
     await this.selectIranianNationality();
-
     await this.enterNationalCode(nationalCode);
-
     await this.verifyIdentityInquiryEnabled();
-
     await this.identityInquiry();
+    await this.waitForPatientFieldsReady();
+  }
+
+  async searchByNationalCodeAndBirthDate(
+    nationalCode: string,
+    birthDate: string,
+  ): Promise<void> {
+    await this.selectIranianNationality();
+    await this.enterNationalCode(nationalCode);
+    await this.locator.birthDate.fill(birthDate);
+    await expect(this.locator.identityInquiryByBirthDateButton).toBeEnabled();
+    await this.locator.identityInquiryByBirthDateButton.click();
+    await this.waitForPatientFieldsReady();
+  }
+
+  async searchByElectronicNumber(electronicNumber: string): Promise<void> {
+    await this.locator.electronicNumber.click();
+    await this.locator.electronicNumber.fill(electronicNumber);
+
+    await this.locator.searchButton.click();
+
+    await this.waitForPatientFieldsReady();
+  }
+
+  async searchByNameAndLastName(firstName: string, lastName: string): Promise<void> {
+    await this.locator.firstName.fill(firstName);
+    await this.locator.lastName.fill(lastName);
+    await this.locator.searchButton.click();
+    await this.waitForPatientFieldsReady();
+  }
+
+  async selectPatientFromResults(firstName: string,lastName: string,fatherName: string,nationalCode?: string): Promise<void> {
+    // تابع کمکی برای ایجاد Regex منعطف جهت تطابق ی/ي و ک/ك و فاصله‌های اضافی
+    const createFlexibleRegex = (text: string): RegExp => {
+      const sanitized = text.trim()
+        .replace(/[یي]/g, '[یي]')
+        .replace(/[کك]/g, '[کك]');
+      return new RegExp(`^\\s*${sanitized}\\s*$`, 'i');
+    };
+
+    let targetRow = this.locator.patientResultRows
+      // بررسی دقیق ستون FirstName
+      .filter({
+        has: this.page.locator('td.mat-column-FirstName', {
+          hasText: createFlexibleRegex(firstName),
+        }),
+      })
+      // بررسی دقیق ستون LastName
+      .filter({
+        has: this.page.locator('td.mat-column-LastName', {
+          hasText: createFlexibleRegex(lastName),
+        }),
+      })
+      // بررسی دقیق ستون FatherName
+      .filter({
+        has: this.page.locator('td.mat-column-FatherName', {
+          hasText: createFlexibleRegex(fatherName),
+        }),
+      });
+
+    // اگر کدملی هم پاس داده شده بود و خواستی ردیف یکتا‌تر شود:
+    if (nationalCode) {
+      targetRow = targetRow.filter({
+        has: this.page.locator('td.mat-column-NCode', {
+          hasText: nationalCode.trim(),
+        }),
+      });
+    }
+
+    // انتخاب اولین ردیف مطابق با شرایط
+    const selectedRow = targetRow.first();
+
+    // اطمینان از Visible و پایدار بودن ردیف
+    await expect(selectedRow, `ردیف مربوط به بیمار ${firstName} ${lastName} پیدا نشد`).toBeVisible();
+    
+    // کلیک روی ردیف جهت انتخاب
+    await selectedRow.click();
+
+    // انتظار برای اتمام انیمیشن‌ها یا درخواست‌های انگولار
+    await this.waitForPageReady();
+    await this.waitForPatientFieldsReady();
+  }
+
+  async resetPatientForm(): Promise<void> {
+    await this.locator.refreshButton.click();
+
+    await expect(this.locator.nationalCode).toBeEditable({
+      timeout: 10000,
+    });
+
+    await this.waitForPatientFormReady();
+  }
+
+  private async waitForPatientFormReady(): Promise<void> {
+    await expect(this.locator.nationalCode).toBeVisible();
+    await expect(this.locator.firstName).toBeVisible();
+    await expect(this.locator.lastName).toBeVisible();
+  }
+
+  private async waitForPatientFieldsReady(): Promise<void> {
+    await this.waitUntilStable();
+    await this.waitForPatientFormReady();
+    await expect(this.locator.firstName).not.toHaveValue('');
+    await expect(this.locator.lastName).not.toHaveValue('');
+  }
+
+  async searchPatient(nationalCode: string): Promise<void> {
+    await this.searchByNationalCode(nationalCode);
   }
 
   async fillPatientInformation(patient: PatientInformationInput): Promise<void> {
@@ -547,6 +661,212 @@ export class AdmissionPage extends BasePage {
 
     await this.denyAdmitPrintPage();
     // await this.loadPreadmitPatientList();
+  }
+
+  
+  private async isPatientLoaded(): Promise<boolean> {
+    try {
+      await expect(this.locator.firstName).toHaveValue(/.+/, {
+        timeout: 3000,
+      });
+
+      await expect(this.locator.lastName).toHaveValue(/.+/, {
+        timeout: 3000,
+      });
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+ async searchPatientWithStrategies(patient: Patient): Promise<void> {
+    const results: {
+      strategy: string;
+      success: boolean;
+      error?: string;
+    }[] = [];
+
+    const getErrorMessage = (err: unknown): string =>
+      err instanceof Error ? err.message : String(err);
+
+    // ============================================================
+    // 2.1 Search by National Code
+    // ============================================================
+
+    try {
+      await test.step('2.1 Search by National Code', async () => {
+        await this.resetPatientForm();
+
+        await this.searchByNationalCode(patient.nationalCode);
+
+        const loaded = await this.isPatientLoaded();
+
+        if (!loaded) {
+          throw new Error('Patient was not loaded');
+        }
+
+        await expect(this.locator.firstName).toHaveValue(/.+/);
+        await expect(this.locator.lastName).toHaveValue(/.+/);
+      });
+
+      results.push({
+        strategy: 'National Code',
+        success: true,
+      });
+    } catch (error) {
+      results.push({
+        strategy: 'National Code',
+        success: false,
+        error: getErrorMessage(error),
+      });
+    }
+
+    // ============================================================
+    // 2.2 Search by National Code + Birth Date
+    // ============================================================
+
+    try {
+      await test.step('2.2 Search by National Code + Birth Date', async () => {
+        await this.resetPatientForm();
+
+        await this.searchByNationalCodeAndBirthDate(
+          patient.nationalCode,
+          patient.birthDate,
+        );
+
+        const loaded = await this.isPatientLoaded();
+
+        if (!loaded) {
+          throw new Error('Patient was not loaded');
+        }
+
+        await expect(this.locator.firstName).toHaveValue(/.+/);
+        await expect(this.locator.lastName).toHaveValue(/.+/);
+      });
+
+      results.push({
+        strategy: 'National Code + Birth Date',
+        success: true,
+      });
+    } catch (error) {
+      results.push({
+        strategy: 'National Code + Birth Date',
+        success: false,
+        error: getErrorMessage(error),
+      });
+    }
+
+    // ============================================================
+    // 2.3 Search by Name + Last Name
+    // ============================================================
+
+    if (patient.firstName.trim() && patient.lastName.trim()) {
+      try {
+        await test.step('2.3 Search by Name + Last Name', async () => {
+          await this.resetPatientForm();
+
+          await this.searchByNameAndLastName(
+            patient.firstName,
+            patient.lastName,
+          );
+
+          await this.selectPatientFromResults(
+            patient.firstName,
+            patient.lastName,
+            patient.fatherName,
+            patient.nationalCode,
+          );
+
+          const loaded = await this.isPatientLoaded();
+
+          if (!loaded) {
+            throw new Error('Patient was not loaded');
+          }
+
+          await expect(this.locator.firstName).toHaveValue(/.+/);
+          await expect(this.locator.lastName).toHaveValue(/.+/);
+        });
+
+        results.push({
+          strategy: 'Name + Last Name',
+          success: true,
+        });
+      } catch (error) {
+        results.push({
+          strategy: 'Name + Last Name',
+          success: false,
+          error: getErrorMessage(error),
+        });
+      }
+    }
+
+    // ============================================================
+    // 2.4 Search by Electronic Number
+    // ============================================================
+
+    if (patient.electronicNumber.trim()) {
+      try {
+        await test.step('2.4 Search by Electronic Number', async () => {
+          await this.resetPatientForm();
+
+          await this.searchByElectronicNumber(
+            patient.electronicNumber,
+          );
+
+          const loaded = await this.isPatientLoaded();
+
+          if (!loaded) {
+            throw new Error('Patient was not loaded');
+          }
+
+          await expect(this.locator.firstName).toHaveValue(/.+/);
+          await expect(this.locator.lastName).toHaveValue(/.+/);
+        });
+
+        results.push({
+          strategy: 'Electronic Number',
+          success: true,
+        });
+      } catch (error) {
+        results.push({
+          strategy: 'Electronic Number',
+          success: false,
+          error: getErrorMessage(error),
+        });
+      }
+    }
+
+    // ============================================================
+    // 2.5 Final Result
+    // ============================================================
+
+    await test.step('2.5 Verify Strategy Results', async () => {
+      const passedStrategies = results.filter(result => result.success);
+      const failedStrategies = results.filter(result => !result.success);
+
+      await test.info().attach('Search Strategy Summary', {
+        body: JSON.stringify(
+          {
+            patient: {
+              nationalCode: patient.nationalCode,
+            },
+            passedStrategies,
+            failedStrategies,
+            allStrategiesPassed: failedStrategies.length === 0,
+          },
+          null,
+          2,
+        ),
+        contentType: 'application/json',
+      });
+
+      if (passedStrategies.length === 0) {
+        throw new Error(
+          `Patient not found using any search strategy: ${patient.nationalCode}`,
+        );
+      }
+    });
   }
 
 }

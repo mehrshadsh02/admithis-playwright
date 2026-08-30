@@ -10,6 +10,7 @@ import { PatientApi } from '../../Api/PatientApi';
 import { Database } from '../../DB/Database';
 import { validateEmergencyAdmission } from '../../DB/Validators/EmergencyValidator';
 import type { EmergencyAdmissionState } from '../../models/EmergencyAdmissionState';
+import * as allure from 'allure-js-commons';
 
 export interface EmergencyCreateResult {
   admitId: number;
@@ -18,7 +19,37 @@ export interface EmergencyCreateResult {
   fileFormationId: number;
 }
 
-test('001-Create,Edit and Cancel preadmit filing', async ({ page, context }) => {
+test('001-Search Patient Test', async ({ page, context }) => {
+  await allure.epic('Admission');
+  await allure.feature('Patient Search');
+  await allure.story('Search Patient');
+  await allure.severity('critical');
+  await context.addCookies([
+    {
+      name: 'token',
+      value: process.env.COOKIE_TOKEN!,
+      domain: '192.168.5.19',
+      path: '/',
+    },
+  ]);
+
+  const admission = new AdmissionPage(page);
+
+  await test.step('1. Open Admission Page', async () => {
+    await admission.open();
+  });
+
+  await test.step('2. Search Patient', async () => {
+    await admission.searchPatientWithStrategies(insuredAdult);
+  }); 
+}); 
+
+test('002-Create,Edit and Cancel preadmit filing', async ({ page, context }) => {
+  await allure.epic('Admission');
+  await allure.feature('Create,Edit and Cancel preadmit');
+  await allure.story('PreAdmit');
+  await allure.severity('critical');
+
   await context.addCookies([
     {
       name: 'token',
@@ -78,7 +109,7 @@ test('001-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
   });
 });
 
-test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, request }) => {
+test('003-Create,Edit and Cancel Emergency filing', async ({ page, context, request }) => {
   await context.addCookies([
     {
       name: 'token',
@@ -110,6 +141,7 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
 
     await admission.selectEmergencyUnderObservation();
 
+    // await admission.searchPatientWithStrategies(traumaPatient);
     await admission.searchPatient(traumaPatient.nationalCode);
 
     await admission.fillPatientInformation(traumaPatient);
@@ -188,7 +220,7 @@ test('002-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
   });
 });
 
-test('003-Create and Edit Inpatient filing', async ({ page, context }) => {
+test('004-Create and Edit Inpatient filing', async ({ page, context }) => {
   await context.addCookies([
     {
       name: 'token',
@@ -203,7 +235,9 @@ test('003-Create and Edit Inpatient filing', async ({ page, context }) => {
 
     await admission.open();
 
+    // await admission.searchPatientWithStrategies(adultInpatient);
     await admission.searchPatient(adultInpatient.nationalCode);
+
 
     await admission.fillPatientInformationforInapatient(adultInpatient);
 
