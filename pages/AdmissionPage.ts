@@ -1,10 +1,13 @@
+import { test } from '@playwright/test';
 import { expect, type Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { AdmissionLocator } from '../locators/AdmissionLocator';
 import { NgSelect } from '../components/NgSelect';
-import { logger } from '../helpers/logger';
+// import { logger } from '../helpers/logger';
 import type { Patient } from '../data/models/Patient';
 import type {PatientInformationInput ,AdmissionAssignmentInput,} from '../data/models/PatientAdmission.types';
+// import { Console } from 'console';
+import { console } from 'inspector';
 
 
 export class AdmissionPage extends BasePage {
@@ -192,83 +195,6 @@ export class AdmissionPage extends BasePage {
     await this.waitForPatientFormReady();
     await expect(this.locator.firstName).not.toHaveValue('');
     await expect(this.locator.lastName).not.toHaveValue('');
-  }
-
-  private async isPatientLoaded(): Promise<boolean> {
-    try {
-      await expect(this.locator.firstName).toHaveValue(/.+/, {
-        timeout: 3000,
-      });
-
-      await expect(this.locator.lastName).toHaveValue(/.+/, {
-        timeout: 3000,
-      });
-
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  async searchPatientWithStrategies(patient: Patient): Promise<void> {
-    // 1. کد ملی
-    // await this.resetPatientForm();
-
-    await this.searchByNationalCode(patient.nationalCode);
-
-    // if (await this.isPatientLoaded()) {
-    //   return;
-    // }
-
-    // 2. کد ملی + تاریخ تولد
-    await this.resetPatientForm();
-
-    await this.searchByNationalCodeAndBirthDate(
-      patient.nationalCode,
-      patient.birthDate,
-    );
-
-    // if (await this.isPatientLoaded()) {
-    //   return;
-    // }
-
-    // 3. نام و نام خانوادگی
-    if (patient.firstName.trim() && patient.lastName.trim()) {
-      await this.resetPatientForm();
-
-      await this.searchByNameAndLastName(
-        patient.firstName,
-        patient.lastName,
-      );
-
-      await this.selectPatientFromResults(
-        patient.firstName,
-        patient.lastName,
-        patient.fatherName,
-        patient.nationalCode,
-      );
-
-      // if (await this.isPatientLoaded()) {
-      //   return;
-      // }
-    }
-
-    // 4. شماره الکترونیک
-    if (patient.electronicNumber.trim()) {
-      await this.resetPatientForm();
-
-      await this.searchByElectronicNumber(
-        patient.electronicNumber,
-      );
-
-      if (await this.isPatientLoaded()) {
-        return;
-      }
-    }
-
-    throw new Error(
-      `Patient not found: ${patient.nationalCode}`,
-    );
   }
 
   async searchPatient(nationalCode: string): Promise<void> {
@@ -735,6 +661,212 @@ export class AdmissionPage extends BasePage {
 
     await this.denyAdmitPrintPage();
     // await this.loadPreadmitPatientList();
+  }
+
+  
+  private async isPatientLoaded(): Promise<boolean> {
+    try {
+      await expect(this.locator.firstName).toHaveValue(/.+/, {
+        timeout: 3000,
+      });
+
+      await expect(this.locator.lastName).toHaveValue(/.+/, {
+        timeout: 3000,
+      });
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+ async searchPatientWithStrategies(patient: Patient): Promise<void> {
+    const results: {
+      strategy: string;
+      success: boolean;
+      error?: string;
+    }[] = [];
+
+    const getErrorMessage = (err: unknown): string =>
+      err instanceof Error ? err.message : String(err);
+
+    // ============================================================
+    // 2.1 Search by National Code
+    // ============================================================
+
+    try {
+      await test.step('2.1 Search by National Code', async () => {
+        await this.resetPatientForm();
+
+        await this.searchByNationalCode(patient.nationalCode);
+
+        const loaded = await this.isPatientLoaded();
+
+        if (!loaded) {
+          throw new Error('Patient was not loaded');
+        }
+
+        await expect(this.locator.firstName).toHaveValue(/.+/);
+        await expect(this.locator.lastName).toHaveValue(/.+/);
+      });
+
+      results.push({
+        strategy: 'National Code',
+        success: true,
+      });
+    } catch (error) {
+      results.push({
+        strategy: 'National Code',
+        success: false,
+        error: getErrorMessage(error),
+      });
+    }
+
+    // ============================================================
+    // 2.2 Search by National Code + Birth Date
+    // ============================================================
+
+    try {
+      await test.step('2.2 Search by National Code + Birth Date', async () => {
+        await this.resetPatientForm();
+
+        await this.searchByNationalCodeAndBirthDate(
+          patient.nationalCode,
+          patient.birthDate,
+        );
+
+        const loaded = await this.isPatientLoaded();
+
+        if (!loaded) {
+          throw new Error('Patient was not loaded');
+        }
+
+        await expect(this.locator.firstName).toHaveValue(/.+/);
+        await expect(this.locator.lastName).toHaveValue(/.+/);
+      });
+
+      results.push({
+        strategy: 'National Code + Birth Date',
+        success: true,
+      });
+    } catch (error) {
+      results.push({
+        strategy: 'National Code + Birth Date',
+        success: false,
+        error: getErrorMessage(error),
+      });
+    }
+
+    // ============================================================
+    // 2.3 Search by Name + Last Name
+    // ============================================================
+
+    if (patient.firstName.trim() && patient.lastName.trim()) {
+      try {
+        await test.step('2.3 Search by Name + Last Name', async () => {
+          await this.resetPatientForm();
+
+          await this.searchByNameAndLastName(
+            patient.firstName,
+            patient.lastName,
+          );
+
+          await this.selectPatientFromResults(
+            patient.firstName,
+            patient.lastName,
+            patient.fatherName,
+            patient.nationalCode,
+          );
+
+          const loaded = await this.isPatientLoaded();
+
+          if (!loaded) {
+            throw new Error('Patient was not loaded');
+          }
+
+          await expect(this.locator.firstName).toHaveValue(/.+/);
+          await expect(this.locator.lastName).toHaveValue(/.+/);
+        });
+
+        results.push({
+          strategy: 'Name + Last Name',
+          success: true,
+        });
+      } catch (error) {
+        results.push({
+          strategy: 'Name + Last Name',
+          success: false,
+          error: getErrorMessage(error),
+        });
+      }
+    }
+
+    // ============================================================
+    // 2.4 Search by Electronic Number
+    // ============================================================
+
+    if (patient.electronicNumber.trim()) {
+      try {
+        await test.step('2.4 Search by Electronic Number', async () => {
+          await this.resetPatientForm();
+
+          await this.searchByElectronicNumber(
+            patient.electronicNumber,
+          );
+
+          const loaded = await this.isPatientLoaded();
+
+          if (!loaded) {
+            throw new Error('Patient was not loaded');
+          }
+
+          await expect(this.locator.firstName).toHaveValue(/.+/);
+          await expect(this.locator.lastName).toHaveValue(/.+/);
+        });
+
+        results.push({
+          strategy: 'Electronic Number',
+          success: true,
+        });
+      } catch (error) {
+        results.push({
+          strategy: 'Electronic Number',
+          success: false,
+          error: getErrorMessage(error),
+        });
+      }
+    }
+
+    // ============================================================
+    // 2.5 Final Result
+    // ============================================================
+
+    await test.step('2.5 Verify Strategy Results', async () => {
+      const passedStrategies = results.filter(result => result.success);
+      const failedStrategies = results.filter(result => !result.success);
+
+      await test.info().attach('Search Strategy Summary', {
+        body: JSON.stringify(
+          {
+            patient: {
+              nationalCode: patient.nationalCode,
+            },
+            passedStrategies,
+            failedStrategies,
+            allStrategiesPassed: failedStrategies.length === 0,
+          },
+          null,
+          2,
+        ),
+        contentType: 'application/json',
+      });
+
+      if (passedStrategies.length === 0) {
+        throw new Error(
+          `Patient not found using any search strategy: ${patient.nationalCode}`,
+        );
+      }
+    });
   }
 
 }
