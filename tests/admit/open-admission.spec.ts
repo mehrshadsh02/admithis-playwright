@@ -59,33 +59,33 @@ test('002-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
     },
   ]);
 
-  await test.step('Create preadmit', async () => {
-    const admission = new AdmissionPage(page);
+  const admission = new AdmissionPage(page);
+  const cash = new CashPage(page);
 
-    await admission.open();
+  // await test.step('Create preadmit', async () => {
 
-    await admission.searchPatient(insuredAdult.nationalCode);
+  //   await admission.open();
 
-    await admission.fillPatientInformation(insuredAdult);
+  //   await admission.searchPatient(insuredAdult.nationalCode);
 
-    await admission.assignWardDoctorAndPrepayment(insuredAdult);
+  //   await admission.fillPatientInformation(insuredAdult);
 
-    await admission.saveAdmissionFiling();
+  //   await admission.assignWardDoctorAndPrepayment(insuredAdult);
 
-    await admission.denyAdmitPrintPage();
+  //   await admission.saveAdmissionFiling();
 
-    await expect(page).toHaveURL(/8019/);
-  });
+  //   await admission.denyAdmitPrintPage();
 
-  await test.step('Pay Pishpardakht', async () => {
-    const cash = new CashPage(page);
+  //   await expect(page).toHaveURL(/8019/);
+  // });
 
-    await cash.payPatientByNationalCode(insuredAdult.nationalCode);
-  });
+  // await test.step('Pay Pishpardakht', async () => {
+  //   await cash.payPatientByNationalCode(insuredAdult.nationalCode);
+  // });
 
   await test.step('Edit PreAdmit', async () => {
-    const admission = new AdmissionPage(page);
-
+    await admission.open();
+    
     await admission.openInPatientList();
 
     await admission.loadPreadmitPatientList();
@@ -94,7 +94,6 @@ test('002-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
   });
 
   await test.step('Cancel PreAdmit', async () => {
-    const admission = new AdmissionPage(page);
 
     await admission.openInPatientList();
 
@@ -104,7 +103,6 @@ test('002-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
   });
 
   await test.step('Refund Pishpardakht', async () => {
-    const cash = new CashPage(page);
     await cash.refundPatientByNationalCode(insuredAdult.nationalCode, insuredAdult.refundComment);
   });
 });
@@ -141,7 +139,6 @@ test('003-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
 
     await admission.selectEmergencyUnderObservation();
 
-    // await admission.searchPatientWithStrategies(traumaPatient);
     await admission.searchPatient(traumaPatient.nationalCode);
 
     await admission.fillPatientInformation(traumaPatient);

@@ -19,10 +19,17 @@ export class AdmissionPage extends BasePage {
   }
 
   async open(): Promise<void> {
-    await this.goto('/');
-    await this.waitForPageReady();
+    await test.step('1.1 Navigate to Base URL', async () => {
+      await this.goto('/');
+    });
 
-    await expect(this.page.locator('input[formcontrolname="nationalCode"]')).toBeVisible();
+    await test.step('1.2 Wait for Page Ready State', async () => {
+      await this.waitForPageReady();
+    });
+
+    await test.step('1.3 Verify National Code Input Visibility', async () => {
+      await expect(this.locator.nationalCode).toBeVisible();
+    });
   }
 
   async selectIranianNationality(): Promise<void> {
@@ -87,11 +94,25 @@ export class AdmissionPage extends BasePage {
   }
 
   async searchByNationalCode(nationalCode: string): Promise<void> {
-    await this.selectIranianNationality();
-    await this.enterNationalCode(nationalCode);
-    await this.verifyIdentityInquiryEnabled();
-    await this.identityInquiry();
-    await this.waitForPatientFieldsReady();
+    await test.step('2.1 Select Iranian Nationality', async () => {
+      await this.selectIranianNationality();
+    });
+
+    await test.step('2.2 Enter National Code', async () => {
+      await this.enterNationalCode(nationalCode);
+    });
+
+    await test.step('2.3 Verify Identity Inquiry Button Enabled', async () => {
+      await this.verifyIdentityInquiryEnabled();
+    });
+
+    await test.step('2.4 Trigger Identity Inquiry', async () => {
+      await this.identityInquiry();
+    });
+
+    await test.step('2.5 Wait for Patient Fields to Populate', async () => {
+      await this.waitForPatientFieldsReady();
+    });
   }
 
   async searchByNationalCodeAndBirthDate(
@@ -203,67 +224,86 @@ export class AdmissionPage extends BasePage {
 
   async fillPatientInformation(patient: PatientInformationInput): Promise<void> {
 
-    await this.fillIfEmpty(this.locator.firstName, patient.firstName);
-    await this.fillIfEmpty(this.locator.lastName, patient.lastName);
-    await this.fillIfEmpty(this.locator.fatherName, patient.fatherName);
-    await this.fillIfEmpty(this.locator.birthDate, patient.birthDate);
+    await test.step('3.1 Fill Identity & Demographic Info', async () => {
+      await this.fillIfEmpty(this.locator.firstName, patient.firstName);
+      await this.fillIfEmpty(this.locator.lastName, patient.lastName);
+      await this.fillIfEmpty(this.locator.fatherName, patient.fatherName);
+      await this.fillIfEmpty(this.locator.birthDate, patient.birthDate);
+      await this.ngSelect.selectIfEmptyByFormControl('maritalStatus',patient.maritalStatus);
+      await this.waitUntilStable();
+      await this.ngSelect.selectIfEmptyByFormControl('sexuality',patient.sex);
+      await this.waitUntilStable();
 
+    });
+
+    await test.step('3.2 Fill Banking Info', async () => {
+      await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'شماره شبا' }), patient.ShabaNo);
+
+      await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'صاحب شبا' }),patient.BankAcountName);
+    });
     
-    await this.ngSelect.selectIfEmptyByFormControl('maritalStatus',patient.maritalStatus);
-    await this.waitUntilStable();
+    await test.step('3.3 Fill Insurance Info', async () => {
+      await this.ngSelect.selectIfEmptyByFormControl('insuranceName',patient.insuranceName);
+      await this.waitUntilStable();
+      
+      await this.ngSelect.selectIfEmptyByFormControl('insuranceFund',patient.insuranceFund);
+      await this.waitUntilStable(); 
+
+      await this.fillIfEmpty(this.locator.insuranceNumber, patient.insuranceNumber);
+      await this.fillIfEmpty(this.locator.insuranceExpirationDate, patient.insuranceExpirationDate);
+
+      await this.ngSelect.selectIfEmptyByFormControl('insurRelation',patient.insuranceRelation);
+      await this.waitUntilStable();
+    });
     
-    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'شماره شبا' }), patient.ShabaNo);
+    await test.step('3.4 Fill Contact & Accompany Info', async () => {
+      await this.fillIfEmpty(this.locator.mobileNumber, patient.mobile);
+      await this.fillIfEmpty(this.locator.address, patient.address);
+      await this.locator.accompanyFullName.fill(patient.accompanyName);
+      await this.ngSelect.selectIfEmptyByFormControl('relation', patient.accompanyRelation);
+      await this.waitUntilStable();
+      await this.locator.accompanyMobileNumber.fill(patient.accompanyMobile);
+    });
 
-    await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'صاحب شبا' }),patient.BankAcountName);
+    await test.step('3.5 Fill Clinical Info', async () => {
+      await this.locator.showClinicalFieldsButton.click();
+      await this.waitForPageReady();
 
-
-    await this.ngSelect.selectIfEmptyByFormControl('sexuality',patient.sex);
-    await this.waitUntilStable();
-
-    await this.ngSelect.selectIfEmptyByFormControl('insuranceName',patient.insuranceName);
-    await this.waitUntilStable();
-    
-    await this.ngSelect.selectIfEmptyByFormControl('insuranceFund',patient.insuranceFund);
-    await this.waitUntilStable(); 
-    
-    await this.fillIfEmpty(this.locator.insuranceNumber, patient.insuranceNumber);
-    await this.fillIfEmpty(this.locator.insuranceExpirationDate, patient.insuranceExpirationDate);
-
-    await this.ngSelect.selectIfEmptyByFormControl('insurRelation',patient.insuranceRelation);
-    await this.waitUntilStable();
-
-    await this.fillIfEmpty(this.locator.mobileNumber, patient.mobile);
-    await this.fillIfEmpty(this.locator.address, patient.address);
-
-    await this.locator.accompanyFullName.fill(patient.accompanyName);
-    await this.ngSelect.selectIfEmptyByFormControl('relation', patient.accompanyRelation);
-    await this.waitUntilStable();
-    await this.locator.accompanyMobileNumber.fill(patient.accompanyMobile);
-
-    await this.locator.showClinicalFieldsButton.click();
-    await this.waitForPageReady();
-
-    await this.ngSelect.selectByFormControl('firstRecognition', patient.firstRecognition);
-    await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('howToRefer', patient.howToRefer);
-    await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('causeOfHospitalization', patient.causeOfHospitalization,);
-    await this.waitUntilStable();
+      await this.ngSelect.selectByFormControl('firstRecognition', patient.firstRecognition);
+      await this.waitUntilStable();
+      await this.ngSelect.selectByFormControl('howToRefer', patient.howToRefer);
+      await this.waitUntilStable();
+      await this.ngSelect.selectByFormControl('causeOfHospitalization', patient.causeOfHospitalization,);
+      await this.waitUntilStable();
+    });
   }
 
   async assignWardDoctorAndPrepayment(patient: AdmissionAssignmentInput): Promise<void> {
-    await this.ngSelect.selectByFormControl('wardfileld', patient.ward);
-    await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
-    await this.waitUntilStable();
-    await this.ngSelect.selectIfEmptyByFormControl('responsiblePatient',patient.responsiblePatient);
-    await this.waitUntilStable();
-    await this.locator.prepayment.fill(patient.prepayment);
+    await test.step('4.1 Select Ward', async () => {
+      await this.ngSelect.selectByFormControl('wardfileld', patient.ward);
+      await this.waitUntilStable(); 
+    });
+    
+    await test.step('4.2 Select Doctor', async () => {
+      await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
+      await this.waitUntilStable();
+    });
+    
+    await test.step('4.3 Select Responsible Person', async () => {
+      await this.ngSelect.selectIfEmptyByFormControl('responsiblePatient',patient.responsiblePatient);
+      await this.waitUntilStable(); 
+    });
+    
+    await test.step('4.4 Enter Prepayment Amount', async () => {
+      await this.locator.prepayment.fill(patient.prepayment);
+    });
   }
 
   async saveAdmissionFiling(): Promise<void> {
-    await this.locator.saveFileButton.click();
-    await this.waitForPageReady();
+    await test.step('5.1 save File Admission', async () => { 
+      await this.locator.saveFileButton.click();
+      await this.waitForPageReady();
+    });
   }
 
   async saveAdmissionFilingEmergency(): Promise<{
@@ -312,42 +352,44 @@ export class AdmissionPage extends BasePage {
 
 
   async saveEditAdmissionFiling(): Promise<{ success: boolean; message?: string }> {
-    const editFilingResponsePromise = this.page.waitForResponse(
-      (response) =>
-        response.url().includes('/api/Filing/EditFiling') &&
-        response.request().method() === 'POST'
-    );
+    return await test.step('9.6 Clear Sheba Information', async () => {
+      const editFilingResponsePromise = this.page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/Filing/EditFiling') &&
+          response.request().method() === 'POST'
+      );
 
-    await this.locator.saveFileButton.click();
+      await this.locator.saveFileButton.click();
 
-    const response = await editFilingResponsePromise;
+      const response = await editFilingResponsePromise;
 
-    let responseBody: { message?: string } | null = null;
+      let responseBody: { message?: string } | null = null;
 
-    try {
-      responseBody = (await response.json()) as { message?: string };
-    } catch {
-      responseBody = null;
-    }
+      try {
+        responseBody = (await response.json()) as { message?: string };
+      } catch {
+        responseBody = null;
+      }
 
-    if (!response.ok()) {
-      const message =
-        responseBody?.message ||
-        `Save failed with status ${response.status()}`;
+      if (!response.ok()) {
+        const message =
+          responseBody?.message ||
+          `Save failed with status ${response.status()}`;
 
-      console.error(`[SAVE ERROR] EditFiling failed: ${message}`);
+        console.error(`[SAVE ERROR] EditFiling failed: ${message}`);
+        return {
+          success: false,
+          message,
+        };
+      }
+
+      console.log('[ACTION] Filing saved successfully.');
+      await this.waitForPageReady();
+
       return {
-        success: false,
-        message,
+        success: true,
       };
-    }
-
-    console.log('[ACTION] Filing saved successfully.');
-    await this.waitForPageReady();
-
-    return {
-      success: true,
-    };
+    });  
   }
 
   async confirmZeroPrepaymentIfVisible(): Promise<void> {
@@ -382,32 +424,38 @@ export class AdmissionPage extends BasePage {
 
 
   async denyAdmitPrintPage(): Promise<void> {
-    await this.locator.denyPrintButton.click();
-    await this.waitForPageReady();
+    await test.step('6.1 Deny Print Button', async () => {
+      await this.locator.denyPrintButton.click();
+      await this.waitForPageReady();
+    });
   }
 
   async openInPatientList(): Promise<void> {
-    const admitHisAppUrl = process.env.ADMITHIS_APP_URL;
+    await test.step('7.1 Open InPatient List', async () => {
+      const admitHisAppUrl = process.env.ADMITHIS_APP_URL;
 
-    if (!admitHisAppUrl) {
-      throw new Error('ADMITHIS_APP_URL is required to open the AdmitHis app.');
-    }
+      if (!admitHisAppUrl) {
+        throw new Error('ADMITHIS_APP_URL is required to open the AdmitHis app.');
+      }
 
-    await this.page.goto(admitHisAppUrl);
-    await this.waitForPageReady();
+      await this.page.goto(admitHisAppUrl);
+      await this.waitForPageReady();
 
-    const link = this.locator.inpatientListLink;
-    await link.waitFor({ state: 'visible', timeout: 15000 });
-    
-    await this.safeClick(this.locator.inpatientListLink);
-    await this.waitForPageReady();
+      const link = this.locator.inpatientListLink;
+      await link.waitFor({ state: 'visible', timeout: 15000 });
+      
+      await this.safeClick(this.locator.inpatientListLink);
+      await this.waitForPageReady();
+    });  
   }
 
   async loadPreadmitPatientList(): Promise<void> {
-    await this.locator.preadmitListCheckbox.waitFor;
-    await expect(this.locator.preadmitListCheckbox).toBeVisible();
-    await expect(this.locator.preadmitListCheckbox).toBeEnabled();
-    await this.locator.preadmitListCheckbox.click();
+    await test.step('8.1 Load Preadmit Patient List', async () => {
+      await this.locator.preadmitListCheckbox.waitFor;
+      await expect(this.locator.preadmitListCheckbox).toBeVisible();
+      await expect(this.locator.preadmitListCheckbox).toBeEnabled();
+      await this.locator.preadmitListCheckbox.click();
+    });
   }
 
   async searchPatientInList(nationalCode: string): Promise<void> {
@@ -417,51 +465,60 @@ export class AdmissionPage extends BasePage {
   }
 
   async openPreadmitPatientForEdit(nationalCode: string): Promise<void> {
-    await this.searchPatientInList(nationalCode);
-    await this.locator.visibleRowActionButton.click();
-    await this.waitForPageReady();
-    await this.locator.editButton.click();
-    await this.waitForPageReady();
+    await test.step('9.1 Open Preadmit Patient List For Edit', async () => {
+      await this.searchPatientInList(nationalCode);
+      await this.locator.visibleRowActionButton.click();
+      await this.waitForPageReady();
+      await this.locator.editButton.click();
+      await this.waitForPageReady();
+    });
   }
 
   async clearShebaInformationAndSave(): Promise<void> {
-    console.log('[ACTION] Starting to clear Sheba Information...');
+    await test.step('9.5 Clear Sheba Information', async () => {
+      console.log('[ACTION] Starting to clear Sheba Information...');
 
-    const currentSheba = await this.locator.shebaNo.inputValue();
-    if (currentSheba.trim() !== '') {
-      console.warn('[LOG] فیلد شماره شبا اشتباه پر شده بود و خالی شد.');
-    } else {
-      console.log('[LOG] فیلد شماره شبا از قبل خالی بود.');
-    }
-    await this.safeFill(this.locator.shebaNo, '');
+      const currentSheba = await this.locator.shebaNo.inputValue();
+      if (currentSheba.trim() !== '') {
+        console.warn('[LOG] فیلد شماره شبا اشتباه پر شده بود و خالی شد.');
+      } else {
+        console.log('[LOG] فیلد شماره شبا از قبل خالی بود.');
+      }
+      await this.safeFill(this.locator.shebaNo, '');
 
-    const currentOwner = await this.locator.shebaOwner.inputValue();
-    if (currentOwner.trim() !== '') {
-      console.warn('[BUG] The Sheba field was filled in incorrectly and became empty.');
-    } else {
-      console.log('[BUG] The field of sheba was already empty');
-    }
-    await this.safeFill(this.locator.shebaOwner, '');
+      const currentOwner = await this.locator.shebaOwner.inputValue();
+      if (currentOwner.trim() !== '') {
+        console.warn('[BUG] The Sheba field was filled in incorrectly and became empty.');
+      } else {
+        console.log('[BUG] The field of sheba was already empty');
+      }
+      await this.safeFill(this.locator.shebaOwner, '');
 
-    const missedShebaInput = this.locator.missedShebaInput;
-    const missedShebaLabel = this.locator.missedShebaLabel;
+      const missedShebaInput = this.locator.missedShebaInput;
+      const missedShebaLabel = this.locator.missedShebaLabel;
 
-    if (!(await missedShebaInput.isChecked())) {
-      await missedShebaLabel.click();
-      await expect(missedShebaInput).toBeChecked();
-    }
+      if (!(await missedShebaInput.isChecked())) {
+        await missedShebaLabel.click();
+        await expect(missedShebaInput).toBeChecked();
+      }
 
-    console.log('[ACTION] Sheba cleanup completed.');
-    await this.waitUntilStable();
+      console.log('[ACTION] Sheba cleanup completed.');
+      await this.waitUntilStable();
+    });
   }
 
   async editPreadmitWardAndDoctor(patient: AdmissionAssignmentInput): Promise<void> {
     await this.openPreadmitPatientForEdit(patient.nationalCode);
     
-    await this.ngSelect.selectByFormControl('wardfileld', patient.preadmitEditWard);
-    await this.waitUntilStable();
-    await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
-    await this.waitUntilStable();
+    await test.step('9.2 Edit Preadmit Patient Ward', async () => {
+      await this.ngSelect.selectByFormControl('wardfileld', patient.preadmitEditWard);
+      await this.waitUntilStable();
+    });
+
+    await test.step('9.3 Edit Preadmit Patient Doctor', async () => {
+      await this.ngSelect.selectByFormControl('doctorField', patient.doctor);
+      await this.waitUntilStable();
+    });
 
     await this.clearShebaInformationAndSave();
     const saveResult = await this.saveEditAdmissionFiling();
@@ -482,21 +539,23 @@ export class AdmissionPage extends BasePage {
   }
 
   async cancelPreadmit(nationalCode: string): Promise<void> {
-    await this.searchPatientInList(nationalCode);
+    await test.step('10.1 Cancel Preadmit', async () => {
+      await this.searchPatientInList(nationalCode);
 
-    console.log('[ACTION] Opening admission actions menu...');
+      console.log('[ACTION] Opening admission actions menu...');
 
-    await this.locator.admissionActionsButton.click();
+      await this.locator.admissionActionsButton.click();
 
-    await this.locator.cancelAdmissionMenuItem.waitFor({ state: 'visible' });
+      await this.locator.cancelAdmissionMenuItem.waitFor({ state: 'visible' });
 
-    console.log('[ACTION] Clicking "Cancel Admission"...');
+      console.log('[ACTION] Clicking "Cancel Admission"...');
 
-    await this.locator.cancelAdmissionMenuItem.click();
+      await this.locator.cancelAdmissionMenuItem.click();
 
-    await this.waitUntilStable();
-    await this.locator.confirmYesButton.click();
-    await this.waitForPageReady();
+      await this.waitUntilStable();
+      await this.locator.confirmYesButton.click();
+      await this.waitForPageReady();
+    });  
   }
 
   async openEmengencyPatientList(): Promise<void> {
