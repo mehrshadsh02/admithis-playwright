@@ -1,60 +1,38 @@
 # AdmitHis Playwright
 
-Playwright + TypeScript migration of the AdmitHis Robot Framework UI tests.
+AdmitHis UI automation implemented with Playwright and TypeScript.
 
-## Source Of Truth
+## Project state
 
-Robot behavior must be mapped from:
+- **Robot Framework UI → Playwright migration: COMPLETED.** Robot files are legacy/historical references and are no longer the input for new development.
+- **Current direction: Playwright-native development.** New tests, fixtures, helpers, reporting, and features are designed directly for Playwright + TypeScript.
+- Existing Robot scenarios remain under `robot/` for historical traceability.
 
-- `robot/AdmitHis-UI.robot`
-- `robot/AdmitHis-UI-keywords.resource`
-- `robot/AdmitHis-variables.resource`
+## Current architecture
 
-Do not invent missing business behavior. Specs should stay concise, with selectors and workflows owned by page objects, components, locators, fixtures, and data modules.
+`tests/` contains business flows and unit coverage. `pages/` owns workflows, `components/` reusable controls, `locators/` selectors, `fixtures/` shared Playwright context, `data/` typed test data, `models/` domain types, `helpers/` cross-cutting utilities, and `config/` environment/routes/constants. `Api/` and `DB/` provide supporting integration layers.
 
-## Current State
+Configured reporting includes the custom logger reporter, HTML, Allure, and Monocart. Logger output supports console and optional JSON-lines files with redaction and retention.
 
-- Preadmit Robot steps 01-12 are migrated into Playwright structure.
-- Inpatient Robot steps 13-20 now continue in `tests/admit/open-admission.spec.ts`.
-- The AdmitHis token works as of the latest recorded run.
-- The preadmit live flow is blocked by patient data state: patient `1520554001` is already hospitalized.
+## Important commands
 
-## Key Docs
-
-Read these before changing code:
-
-- `AGENTS.md`
-- `docs/PROJECT_CONTEXT.md`
-- `docs/MIGRATION_PROGRESS.md`
-- `docs/TODO.md`
-- `docs/SESSION_LOG.md`
-- `docs/ARCHITECTURE.md`
-
-## Verification
-
-Run at minimum:
-
-```powershell
+```bash
 npx tsc --noEmit
 npm run lint
+npx playwright test
 npx playwright test tests/smoke/open-admit.spec.ts --project=chrome
+npm run format:check
 ```
 
-Run targeted migrated specs when the internal AdmitHis/Cash environment and test data are ready.
+Use environment configuration for internal URLs and credentials; never place secrets in source or documentation.
 
-## Phase 4: SafeActions and WaitEngine
+## Documentation map
 
-`BasePage` is the shared integration point for spinner-aware waits and safe UI actions. The
-Phase 4 contract is:
+- `docs/PROJECT_CONTEXT.md` — current snapshot
+- `docs/MIGRATION_PROGRESS.md` — completed migration history and boundary
+- `docs/ARCHITECTURE.md` — implemented layers and data flow
+- `docs/TODO.md` — native current/future work
+- `docs/SESSION_LOG.md` — dated implementation and verification history
 
-- `waitForPageReady` waits for `domcontentloaded` and hidden `.back-spenner`.
-- `waitUntilStable(timeout)` uses a caller-configurable timeout and treats a missing, detached,
-  or timed-out spinner as a logged non-fatal wait result.
-- `safeClick` and `safeFill` perform stable-page waits, scrolling, state checks, the action, and
-  a post-action wait while logging contextual success/failure without sensitive values.
-- `safeClickCartable` checks attached/visible/enabled state, tolerates scroll-container errors,
-  and uses its own click timeout.
-- `fillIfEmpty` reads the current value and fills only when empty; values are never logged.
-
-The centralized logger remains responsible for redaction. Callers should provide descriptions
-such as “National code field” rather than patient identifiers or credentials.
+Always distinguish **Implemented** (code exists) from **Verified** (a command/test validated it).
+Future work is **New Playwright-native development**.

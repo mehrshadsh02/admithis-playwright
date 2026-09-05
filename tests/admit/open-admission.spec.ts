@@ -62,30 +62,30 @@ test('002-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
   const admission = new AdmissionPage(page);
   const cash = new CashPage(page);
 
-  // await test.step('Create preadmit', async () => {
+  await test.step('Create preadmit', async () => {
 
-  //   await admission.open();
+    await admission.open();
 
-  //   await admission.searchPatient(insuredAdult.nationalCode);
+    await admission.searchPatient(insuredAdult.nationalCode);
 
-  //   await admission.fillPatientInformation(insuredAdult);
+    await admission.fillPatientInformation(insuredAdult);
 
-  //   await admission.assignWardDoctorAndPrepayment(insuredAdult);
+    await admission.assignWardDoctorAndPrepayment(insuredAdult);
 
-  //   await admission.saveAdmissionFiling();
+    await admission.saveAdmissionFiling();
 
-  //   await admission.denyAdmitPrintPage();
+    await admission.denyAdmitPrintPage();
 
-  //   await expect(page).toHaveURL(/8019/);
-  // });
+    await expect(page).toHaveURL(/8019/);
+  });
 
-  // await test.step('Pay Pishpardakht', async () => {
-  //   await cash.payPatientByNationalCode(insuredAdult.nationalCode);
-  // });
+  await test.step('Pay Pishpardakht', async () => {
+    await cash.payPatientByNationalCode(insuredAdult.nationalCode);
+  });
 
   await test.step('Edit PreAdmit', async () => {
     await admission.open();
-    
+
     await admission.openInPatientList();
 
     await admission.loadPreadmitPatientList();
