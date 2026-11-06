@@ -11,6 +11,7 @@ import { Database } from '../../DB/Database';
 import { validateEmergencyAdmission } from '../../DB/Validators/EmergencyValidator';
 import type { EmergencyAdmissionState } from '../../models/EmergencyAdmissionState';
 import * as allure from 'allure-js-commons';
+import dotenv from 'dotenv';
 
 export interface EmergencyCreateResult {
   admitId: number;
@@ -19,11 +20,11 @@ export interface EmergencyCreateResult {
   fileFormationId: number;
 }
 
-test('001-Search Patient Test', async ({ page, context }) => {
-  await allure.epic('Admission');
-  await allure.feature('Patient Search');
-  await allure.story('Search Patient');
-  await allure.severity('critical');
+test.beforeEach(async ({ context }) => {
+  // ۱. خواندن مجدد فایل .env برای گرفتن توکن جدیدی که auth.setup.ts ذخیره کرده است
+  dotenv.config({ override: true });
+
+  // ۲. ست کردن کوکی با توکن جدید برای مرورگر
   await context.addCookies([
     {
       name: 'token',
@@ -32,6 +33,21 @@ test('001-Search Patient Test', async ({ page, context }) => {
       path: '/',
     },
   ]);
+});
+
+test('001-Search Patient Test', async ({ page }) => {
+  await allure.epic('Admission');
+  await allure.feature('Patient Search');
+  await allure.story('Search Patient');
+  await allure.severity('critical');
+  // await context.addCookies([
+  //   {
+  //     name: 'token',
+  //     value: process.env.COOKIE_TOKEN!,
+  //     domain: '192.168.5.19',
+  //     path: '/',
+  //   },
+  // ]);
 
   const admission = new AdmissionPage(page);
 
@@ -44,20 +60,20 @@ test('001-Search Patient Test', async ({ page, context }) => {
   }); 
 }); 
 
-test('002-Create,Edit and Cancel preadmit filing', async ({ page, context }) => {
+test('002-Create,Edit and Cancel preadmit filing', async ({ page }) => {
   await allure.epic('Admission');
   await allure.feature('Create,Edit and Cancel preadmit');
   await allure.story('PreAdmit');
   await allure.severity('critical');
 
-  await context.addCookies([
-    {
-      name: 'token',
-      value: process.env.COOKIE_TOKEN!,
-      domain: '192.168.5.19',
-      path: '/',
-    },
-  ]);
+  // await context.addCookies([
+  //   {
+  //     name: 'token',
+  //     value: process.env.COOKIE_TOKEN!,
+  //     domain: '192.168.5.19',
+  //     path: '/',
+  //   },
+  // ]);
 
   const admission = new AdmissionPage(page);
   const cash = new CashPage(page);
@@ -107,15 +123,15 @@ test('002-Create,Edit and Cancel preadmit filing', async ({ page, context }) => 
   });
 });
 
-test('003-Create,Edit and Cancel Emergency filing', async ({ page, context, request }) => {
-  await context.addCookies([
-    {
-      name: 'token',
-      value: process.env.COOKIE_TOKEN!,
-      domain: '192.168.5.19',
-      path: '/',
-    },
-  ]);
+test('003-Create,Edit and Cancel Emergency filing', async ({ page, request }) => {
+  // await context.addCookies([
+  //   {
+  //     name: 'token',
+  //     value: process.env.COOKIE_TOKEN!,
+  //     domain: '192.168.5.19',
+  //     path: '/',
+  //   },
+  // ]);
 
   let createResult: EmergencyCreateResult | undefined;
 
@@ -217,15 +233,15 @@ test('003-Create,Edit and Cancel Emergency filing', async ({ page, context, requ
   });
 });
 
-test('004-Create and Edit Inpatient filing', async ({ page, context }) => {
-  await context.addCookies([
-    {
-      name: 'token',
-      value: process.env.COOKIE_TOKEN!,
-      domain: '192.168.5.19',
-      path: '/',
-    },
-  ]);
+test('004-Create and Edit Inpatient filing', async ({ page}) => {
+  // await context.addCookies([
+  //   {
+  //     name: 'token',
+  //     value: process.env.COOKIE_TOKEN!,
+  //     domain: '192.168.5.19',
+  //     path: '/',
+  //   },
+  // ]);
 
   await test.step('Create Inpatient', async () => {
     const admission = new AdmissionPage(page);

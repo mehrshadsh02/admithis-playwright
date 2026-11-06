@@ -237,6 +237,10 @@ export class AdmissionPage extends BasePage {
     });
 
     await test.step('3.2 Fill Banking Info', async () => {
+      await this.locator.missedShebaCheckbox.waitFor;
+      await expect(this.locator.missedShebaCheckbox).toBeVisible();
+      await expect(this.locator.missedShebaCheckbox).toBeEnabled();
+      await this.locator.missedShebaCheckbox.click();
       await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'شماره شبا' }), patient.ShabaNo);
 
       await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'صاحب شبا' }),patient.BankAcountName);
@@ -520,6 +524,11 @@ export class AdmissionPage extends BasePage {
       await this.waitUntilStable();
     });
 
+    await this.locator.missedShebaCheckbox.waitFor;
+    await expect(this.locator.missedShebaCheckbox).toBeVisible();
+    await expect(this.locator.missedShebaCheckbox).toBeEnabled();
+    await this.locator.missedShebaCheckbox.click();
+
     await this.clearShebaInformationAndSave();
     const saveResult = await this.saveEditAdmissionFiling();
 
@@ -656,6 +665,10 @@ export class AdmissionPage extends BasePage {
     await this.fillIfEmpty(this.locator.mobileNumber, patient.mobile);
     await this.fillIfEmpty(this.locator.address, patient.address);
 
+    await this.locator.missedShebaCheckbox.waitFor;
+    await expect(this.locator.missedShebaCheckbox).toBeVisible();
+    await expect(this.locator.missedShebaCheckbox).toBeEnabled();
+    await this.locator.missedShebaCheckbox.click();
     await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'شماره شبا' }), patient.ShabaNo);
 
     await this.fillIfEmpty(this.page.getByRole('textbox', { name: 'صاحب شبا' }),patient.BankAcountName);
@@ -704,6 +717,11 @@ export class AdmissionPage extends BasePage {
     
     await this.ngSelect.selectByFormControl('insuranceName', patient.insuranceName);
     await this.waitUntilStable();
+
+    await this.locator.missedShebaCheckbox.waitFor;
+    await expect(this.locator.missedShebaCheckbox).toBeVisible();
+    await expect(this.locator.missedShebaCheckbox).toBeEnabled();
+    await this.locator.missedShebaCheckbox.click();
 
     await this.clearShebaInformationAndSave();
     const saveResult = await this.saveEditAdmissionFiling();

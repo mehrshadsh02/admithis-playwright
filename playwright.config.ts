@@ -92,14 +92,22 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+      use: {
+        browserName: 'chromium',
+        channel: 'chrome', // <--- اضافه‌کردن این خط برای استفاده از کروم نصب‌شده روی سیستم
+      },
+    },
+    {
       name: 'chrome',
+      dependencies: ['setup'],
       use: {
         browserName: 'chromium',
         channel: 'chrome',
         viewport: null,
-        launchOptions: {
-          args: ['--start-maximized'],
-        },
+        launchOptions: { args: ['--start-maximized'] },
+        // storageState: '.auth/state.json', // استفاده از Storage State استاندارد پلی‌رایت
       },
     },
   ],

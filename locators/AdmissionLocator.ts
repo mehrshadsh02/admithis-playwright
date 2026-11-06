@@ -153,6 +153,11 @@ export class AdmissionLocator {
     return this.page.locator("xpath=//span[contains(@class,'mat-checkbox-inner-container')]");
   }
 
+  get missedShebaCheckbox(): Locator {
+    return this.page.locator("xpath=//mat-checkbox[@formcontrolname='missedSheba']//span[contains(@class,'mat-checkbox-inner-container')]");
+  }
+
+
   get spinner(): Locator {
   return this.page.locator('app-spinner .back-spenner');
   }
